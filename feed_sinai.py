@@ -94,7 +94,6 @@ def load_field_config(base_path: str = "./fields") -> typing.Dict:
     return field_config
 
 
-# pylint: disable=bad-continuation
 def map_field_value(
     row: DLCSRecord, field_name: str, config: typing.Dict
 ) -> typing.Any:
@@ -169,7 +168,6 @@ def solr_transformed_dates(solr_client: Solr, parsed_dates: typing.List):
     """ the dates  in sorted list are transformed to solr format  """
     return [solr_client._from_python(date) for date in parsed_dates] # pylint: disable=protected-access
 
-# pylint: disable=bad-continuation
 def map_record(row: DLCSRecord, solr_client: Solr, config: typing.Dict) -> SinaiRecord: # pylint: disable=too-many-statements
     """Maps a metadata record from CSV to Sinai Solr.
 
@@ -223,9 +221,12 @@ def map_record(row: DLCSRecord, solr_client: Solr, config: typing.Dict) -> Sinai
     # inscription
     record["script_sim"] = record.get("script_tesim")
     record["writing_system_sim"] = record.get("writing_system_tesim")
-    record["year_isim"] = year_parser.integer_years(record.get("normalized_date_tesim"))
-    record["date_dtsim"] = solr_transformed_dates(solr_client,
-    (date_parser.get_dates(record.get("normalized_date_tesim"))))
+    record["year_isim"] = year_parser.integer_years(
+        record.get("normalized_date_tesim")
+    )
+    record["date_dtsim"] = solr_transformed_dates(
+        solr_client, date_parser.get_dates(record.get("normalized_date_tesim"))
+    )
     record["place_of_origin_sim"] = record.get("place_of_origin_tesim")
     record["associated_name_sim"] = record.get("associated_name_tesim")
     record["form_sim"] = record.get("form_tesim")
@@ -372,6 +373,7 @@ def thumbnail_from_child(
             return thumb
 
     return None
+
 
 def thumbnail_from_manifest(record: SinaiRecord) -> typing.Optional[str]:
     """Picks a thumbnail downloading the IIIF manifest.
