@@ -1,0 +1,625 @@
+{
+  "ark": "ark:/21198/z1h13zxq",
+  "reconstruction": false,
+  "type": { "id": "manuscript", "label": "Manuscript" },
+  "shelfmark": "Sinai Georgian 34",
+  "extent": "210 ff.",
+  "dim": "190 x 155 x 112 mm",
+  "state": { "id": "codex", "label": "Codex" },
+  "coll": "Pastedown, Quire 1: 1x8 (8), Quire 2: 1x6+1+1 (16), Quire 3: 1x8 (24), Quire 4: 1x8 (32), Quire 5: 1+1x4+1 (38), Quire 6: 1x2+1x6+1+1x4+1 (46), Quire 7, 1x10 (62), Quire 8: undetermined (80), Quire 9: 1x14 (96), Quire 10: 1x14 (110), Quire 11: 1x12 (122), Quire 12: 1x14+1+1 (138), Quire 13: 8x1 (146), Quire 14: undetermined (169), Quire 15: undetermined (185), Quire 16: undetermined (195), Quire 17: 1x8 (203), Quire 18: 1x6+1 (210), pastedown",
+  "features": [
+    { "id": "palimpsest", "label": "Palimpsest" },
+    { "id": "msi", "label": "Multispectral Imaging" }
+  ],
+  "part": [
+    {
+      "label": "Part 1",
+      "support": [
+        { "id": "parchment", "label": "Parchment" },
+        { "id": "paper", "label": "Paper" }
+      ],
+      "dim": "180 x 142 mm (representative folio)",
+      "layer": [
+        {
+          "ark": "ark:/21198/s18d1p",
+          "reconstruction": false,
+          "state": { "id": "overtext", "label": "Overtext" },
+          "label": "Sinai Georgian 34, Overtext (Undetermined (Georgian))",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "georgian-undetermined",
+                  "label": "Undetermined (Georgian)",
+                  "writing_system": "Georgian"
+                }
+              ]
+            }
+          ],
+          "ink": [
+            {
+              "color": ["black", "red"],
+              "note": ["Red used for rubrics"]
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s1308n",
+              "reconstruction": false,
+              "label": "Liturgical collection",
+              "lang": [
+                {
+                  "id": "nucl1302",
+                  "label": "Georgian"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "desc_title": "Liturgical collection",
+                    "genre": [
+                      {
+                        "id": "liturgical-texts",
+                        "label": "Liturgical texts"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "parent": ["ark:/21198/s18d1p"]
+            }
+          ],
+          "assoc_date": [
+            {
+              "iso": {
+                "not_before": "0932"
+              },
+              "value": "932  CE",
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ],
+          "features": [{ "id": "dated", "label": "Dated" }],
+          "note": [
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Many additions and erasures in overtext"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        },
+        {
+          "ark": "ark:/21198/s1gh06",
+          "reconstruction": false,
+          "state": { "id": "undertext", "label": "Undertext" },
+          "label": "Sinai Georgian 34, Undertext (Nuskhurimt)",
+          "locus": "ff. 144–145, 204–205, 208–209, rear pastedown, 140–141",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "nuskhurimt",
+                  "label": "Nuskhurimt",
+                  "writing_system": "Georgian"
+                }
+              ],
+              "note": ["Relatively thick and clumsy"]
+            }
+          ],
+          "layout": [
+            {
+              "columns": "1 columns",
+              "lines": "17 lines, uncertain"
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s14h50",
+              "reconstruction": false,
+              "label": "Hymnary (Iadgari, Assumption)",
+              "lang": [
+                {
+                  "id": "nucl1302",
+                  "label": "Georgian"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "desc_title": "Iadgari, Assumption",
+                    "genre": [
+                      {
+                        "id": "liturgical-texts",
+                        "label": "Liturgical texts"
+                      },
+                      {
+                        "id": "hymnals",
+                        "label": "Hymnals"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "note": [
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Description by Jost Gippert, Bernard Outtier"
+                },
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Bibliography: Metreveli, Č'ank'ievi, and Xevsuriani"
+                }
+              ],
+              "parent": ["ark:/21198/s1gh06"]
+            }
+          ],
+          "assoc_date": [
+            {
+              "value": "ca. 9th-10th c.  CE",
+              "iso": { "not_before": "0801", "not_after": "0950" },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ],
+          "assoc_place": [
+            {
+              "value": "Possibly Jerusalem",
+              "event": { "id": "origin", "label": "Place of Origin" }
+            }
+          ],
+          "note": [
+            {
+              "type": { "id": "foliation", "label": "Foliation Note" },
+              "value": "Reconstructed folio order, ff. 204r (?), 204v, 205r, 205v, 141r, 141v, 140r, 140v, 145r (?),) 145v, 144r, 144v, 208r, 208v"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Description of undertext by Jost Gippert, Bernard Outtier"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Bibliography: Metreveli, Č'ank'ievi, and Xevsuriani"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        },
+        {
+          "ark": "ark:/21198/s1bp7b",
+          "reconstruction": false,
+          "state": { "id": "undertext", "label": "Undertext" },
+          "label": "Sinai Georgian 34, Undertext (Nuskhurimt)",
+          "locus": "ff. 123v, 138r",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "nuskhurimt",
+                  "label": "Nuskhurimt",
+                  "writing_system": "Georgian"
+                }
+              ],
+              "note": ["Slightly slanted minuscule"]
+            }
+          ],
+          "layout": [
+            {
+              "columns": "1 columns",
+              "lines": "19 lines, uncertain"
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s10q2p",
+              "reconstruction": false,
+              "label": "Hymnary (Heirmologion with Theotokia)",
+              "lang": [
+                {
+                  "id": "nucl1302",
+                  "label": "Georgian"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "ark": "ark:/21198/s1sp47",
+                    "pref_title": "Heirmologion",
+                    "alt_title": ["Heirmologion"],
+                    "genre": [
+                      {
+                        "id": "liturgical-texts",
+                        "label": "Liturgical texts"
+                      }
+                    ],
+                    "rel_con": [
+                      {
+                        "label": "Heirmologion",
+                        "uri": "http://viaf.org/viaf/213239652",
+                        "source": "VIAF"
+                      }
+                    ],
+                    "refno": [],
+                    "bib": []
+                  },
+                  "alt_title": "Heirmologion with Theotokia"
+                }
+              ],
+              "note": [
+                {
+                  "type": {
+                    "id": "contents",
+                    "label": "Contents Note"
+                  },
+                  "value": "Theotokia partly identical with those found in Metrevli, and in Kikdnadze"
+                },
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Description by Jost Gippert, Bernard Outtier"
+                },
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Bibliography: Metreveli ; Kiknadze"
+                }
+              ],
+              "parent": ["ark:/21198/s1bp7b"]
+            }
+          ],
+          "assoc_date": [
+            {
+              "value": "ca. 9th-10th c.  CE",
+              "iso": { "not_before": "0801", "not_after": "0950" },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ],
+          "assoc_place": [
+            {
+              "value": "Possibly Jerusalem",
+              "event": { "id": "origin", "label": "Place of Origin" }
+            }
+          ],
+          "note": [
+            {
+              "type": { "id": "foliation", "label": "Foliation Note" },
+              "value": "Writing only on flesh side"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Description of undertext by Jost Gippert, Bernard Outtier"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Bibliography: Metreveli ; Kiknadze"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        },
+        {
+          "ark": "ark:/21198/s1705r",
+          "reconstruction": false,
+          "state": { "id": "undertext", "label": "Undertext" },
+          "label": "Sinai Georgian 34, Undertext (Asomtavruli)",
+          "locus": "rear pastedown",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "asomtavruli",
+                  "label": "Asomtavruli",
+                  "writing_system": "Georgian"
+                }
+              ],
+              "note": ["Large initial letters in the margins"]
+            }
+          ],
+          "layout": [
+            {
+              "lines": "At least 8 lines",
+              "note": ["Line count impossible to determine"]
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s1w103",
+              "reconstruction": false,
+              "label": "Unidentified",
+              "lang": [
+                {
+                  "id": "nucl1302",
+                  "label": "Georgian"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "desc_title": "Unidentified text"
+                  }
+                }
+              ],
+              "note": [
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Description by Jost Gippert, Bernard Outtier"
+                }
+              ],
+              "parent": ["ark:/21198/s1705r"]
+            }
+          ],
+          "assoc_date": [
+            {
+              "value": "ca. 6th- mid 10th c.  CE",
+              "iso": { "not_before": "0501", "not_after": "0948" },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ],
+          "assoc_place": [
+            {
+              "value": "Possibly Jerusalem",
+              "event": { "id": "origin", "label": "Place of Origin" }
+            }
+          ],
+          "note": [
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Lowest layer of double palimpsest"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Description of undertext by Jost Gippert, Bernard Outtier"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        },
+        {
+          "ark": "ark:/21198/s1362f",
+          "reconstruction": false,
+          "state": { "id": "undertext", "label": "Undertext" },
+          "label": "Sinai Georgian 34, Undertext (Nuskhurimt)",
+          "locus": "ff. 130–131, 143, 146",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "nuskhurimt",
+                  "label": "Nuskhurimt",
+                  "writing_system": "Georgian"
+                }
+              ],
+              "note": ["Relatively large, slightly slanted"]
+            }
+          ],
+          "layout": [
+            {
+              "columns": "1 columns",
+              "lines": "17 lines, uncertain"
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s1r690",
+              "reconstruction": false,
+              "label": "Hymnary",
+              "lang": [
+                {
+                  "id": "nucl1302",
+                  "label": "Georgian"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "desc_title": "Hymns",
+                    "genre": [
+                      {
+                        "id": "liturgical-texts",
+                        "label": "Liturgical texts"
+                      },
+                      {
+                        "id": "hymnals",
+                        "label": "Hymnals"
+                      }
+                    ]
+                  }
+                }
+              ],
+              "note": [
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Description by Jost Gippert, Bernard Outtier"
+                },
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Bibliography: Gippert, pp. 165–176 and [331–350], esp. 168 and [340]"
+                }
+              ],
+              "parent": ["ark:/21198/s1362f"]
+            }
+          ],
+          "assoc_date": [
+            {
+              "value": "ca. 9th-mid 10th c.  CE",
+              "iso": { "not_before": "0801", "not_after": "0950" },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ],
+          "assoc_place": [
+            {
+              "value": "Possibly Jerusalem",
+              "event": { "id": "origin", "label": "Place of Origin" }
+            }
+          ],
+          "note": [
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Traces of the same undertext are also found in Leipzig University Library, ms. V 1096, which contains four folios that are likely to have originally belonged to Sinai Georgian 34"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Description of undertext by Jost Gippert, Bernard Outtier"
+            },
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Bibliography: Gippert, pp. 165–176 and [331–350], esp. 168 and [340]"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        },
+        {
+          "ark": "ark:/21198/s1zh1x",
+          "reconstruction": false,
+          "state": { "id": "undertext", "label": "Undertext" },
+          "label": "Sinai Georgian 34, Undertext (Undetermined (Greek))",
+          "locus": "ff, 206–207",
+          "writing": [
+            {
+              "script": [
+                {
+                  "id": "greek-undetermined",
+                  "label": "Undetermined (Greek)",
+                  "writing_system": "Greek"
+                }
+              ]
+            }
+          ],
+          "text_unit": [
+            {
+              "ark": "ark:/21198/s1mh4z",
+              "reconstruction": false,
+              "label": "Unidentified text",
+              "lang": [
+                {
+                  "id": "gree1276",
+                  "label": "Greek"
+                }
+              ],
+              "work_wit": [
+                {
+                  "work": {
+                    "desc_title": "Unidentified text"
+                  }
+                }
+              ],
+              "note": [
+                {
+                  "type": {
+                    "id": "contents",
+                    "label": "Contents Note"
+                  },
+                  "value": "The text is illegible throughout"
+                },
+                {
+                  "type": {
+                    "id": "general",
+                    "label": "Other Notes"
+                  },
+                  "value": "Description by Giulia Rossetto"
+                }
+              ],
+              "parent": ["ark:/21198/s1zh1x"]
+            }
+          ],
+          "note": [
+            {
+              "type": { "id": "general", "label": "Other Notes" },
+              "value": "Description of undertext by Giulia Rossetto"
+            }
+          ],
+          "parent": ["ark:/21198/z1h13zxq"]
+        }
+      ]
+    }
+  ],
+  "location": [
+    {
+      "id": "sinai-oc",
+      "collection": "Old Collection",
+      "repository": "St. Catherine's Monastery of the Sinai"
+    }
+  ],
+  "note": [
+    {
+      "type": { "id": "support", "label": "Support Note" },
+      "value": "Ff. 124-129, 132-137, 147-195 are paper, the rest are parchment"
+    },
+    {
+      "type": { "id": "binding", "label": "Binding Note" },
+      "value": "Leather on wood, decorated with tooling; holes on covers and along edges (for metal reinforcements); leather fastening strap on top cover | Front cover only attached at top, spine broken, outer edge of back cover missing"
+    },
+    {
+      "type": { "id": "collation", "label": "Collation Note" },
+      "value": "Quire structure difficult to establish, due to missing folios, frequency of single-folios, and tight binding"
+    },
+    {
+      "type": { "id": "collation", "label": "Collation Note" },
+      "value": "Quire signatures (with gaps) in Georgian, beginning with 3 (fol. 1), ending with 27 (fol. 204); these signatures differ from quire structure given above"
+    }
+  ],
+  "bib": [
+    {
+      "id": "7502e15c-0626-4086-9f3d-14febce6efc9",
+      "type": { "id": "ref", "label": "Reference" },
+      "range": "p. 94"
+    },
+    {
+      "id": "deb668b6-feec-4828-8749-a97441881226",
+      "type": { "id": "ref", "label": "Reference" },
+      "range": "[35], p. 58"
+    },
+    {
+      "id": "7b0241ed-3cf7-44e2-ab9d-a1102bb9258c",
+      "type": { "id": "ref", "label": "Reference" }
+    }
+  ],
+  "iiif": [
+    {
+      "type": { "id": "main", "label": "Main" },
+      "manifest": "https://sinai-images.library.ucla.edu/iiif/ark:%2F21198%2Fz1h13zxq/manifest",
+      "behavior": "paged",
+      "thumbnail": "https://sinai-images.library.ucla.edu/iiif/ark:%2F21198%2Fz17m10fg/0,1022,6132,6132/150,150/0/default.jpg"
+    }
+  ],
+  "desc_provenance": {
+    "program": [
+      {
+        "label": "Sinai Palimpests Project",
+        "description": "Described as part of the Sinai Palimpsests Project (2006-2017). The Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Project provides scholarly identification and description of the undertext objects in a subset of palimpsested manuscripts in the Sinai collection, with minimal metadata for the overtexts of the host manuscripts."
+      }
+    ]
+  },
+  "image_provenance": {
+    "program": [
+      {
+        "label": "Sinai Palimpests Project",
+        "description": "Imaged as part of the Sinai Palimpsests Project (2006-2017). Digitization for the Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Sinai Palimpsests Project aimed to provide multispectral images of the Undertext Objects in a subset of palimpsested manuscripts in the Sinai collection, as such images may only be available for palimpsested folios.",
+        "camera_operator": ["Damianos Kasotakis", "Michael Phelps"],
+        "imaging_date": "2008-06",
+        "delivery": "spp_1",
+        "msi_processing": ["Keith Knox"],
+        "condition_category": "1",
+        "note": [
+          "Automated processing techniques combine two or more raw images into a single processed image by simple arithmetic.",
+          "Imaging scientists will review the raw images and manually apply other image processing methods to recover the erased layer of the more intractable palimpsest folios. Manual methods analyze the ensemble of spectral differences obtained from multiple illumination modalities in order to increase the legibility of the erased text."
+        ],
+        "imaging_system": "Preservation Book Cradle by Stokes Imaging"
+      }
+    ],
+    "rights": "Contact the Monastery of St. Catherine's of the Sinai."
+  }
+}
