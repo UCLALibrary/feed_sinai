@@ -98,8 +98,8 @@ class TestSinaiJsonImporter:
             """
             )
             result = IMPORTER.get_layer(stub).model_dump(
-                    exclude_none=True, round_trip=True
-                )
+                exclude_none=True, round_trip=True
+            )
             assert result == {
                 "ark": "ark:/21198/ten0p1ol",
                 "reconstruction": False,
@@ -144,12 +144,20 @@ class TestSinaiJsonImporter:
                                     "rel_con": [
                                         {
                                             "label": "Bible. Matthew",
-                                            "uri": st.AnyUrl(st.AnyUrl("https://viaf.org/viaf/188427863")),
+                                            "uri": st.AnyUrl(
+                                                st.AnyUrl(
+                                                    "https://viaf.org/viaf/188427863"
+                                                )
+                                            ),
                                             "source": st.RelatedConceptSource.VIAF,
                                         },
                                         {
                                             "label": "Bible. Matthew",
-                                            "uri": st.AnyUrl(st.AnyUrl("http://id.loc.gov/authorities/names/n79056834")),
+                                            "uri": st.AnyUrl(
+                                                st.AnyUrl(
+                                                    "http://id.loc.gov/authorities/names/n79056834"
+                                                )
+                                            ),
                                             "source": st.RelatedConceptSource.LoC,
                                         },
                                     ],
@@ -173,12 +181,16 @@ class TestSinaiJsonImporter:
                                     "rel_con": [
                                         {
                                             "label": "Bible. Mark",
-                                            "uri": st.AnyUrl("https://viaf.org/viaf/179823714"),
+                                            "uri": st.AnyUrl(
+                                                "https://viaf.org/viaf/179823714"
+                                            ),
                                             "source": st.RelatedConceptSource.VIAF,
                                         },
                                         {
                                             "label": "Bible. Mark",
-                                            "uri": st.AnyUrl("http://id.loc.gov/authorities/names/n78095773"),
+                                            "uri": st.AnyUrl(
+                                                "http://id.loc.gov/authorities/names/n78095773"
+                                            ),
                                             "source": st.RelatedConceptSource.LoC,
                                         },
                                     ],
@@ -202,7 +214,9 @@ class TestSinaiJsonImporter:
                                     "rel_con": [
                                         {
                                             "label": "Bible. Luke",
-                                            "uri": st.AnyUrl("http://viaf.org/viaf/257061095"),
+                                            "uri": st.AnyUrl(
+                                                "http://viaf.org/viaf/257061095"
+                                            ),
                                             "source": st.RelatedConceptSource.VIAF,
                                         }
                                     ],
@@ -226,12 +240,16 @@ class TestSinaiJsonImporter:
                                     "rel_con": [
                                         {
                                             "label": "Bible. John",
-                                            "uri": st.AnyUrl("https://viaf.org/viaf/57145910123927021804"),
+                                            "uri": st.AnyUrl(
+                                                "https://viaf.org/viaf/57145910123927021804"
+                                            ),
                                             "source": st.RelatedConceptSource.VIAF,
                                         },
                                         {
                                             "label": "Bible. John",
-                                            "uri": st.AnyUrl("http://id.loc.gov/authorities/names/n79060414"),
+                                            "uri": st.AnyUrl(
+                                                "http://id.loc.gov/authorities/names/n79060414"
+                                            ),
                                             "source": st.RelatedConceptSource.LoC,
                                         },
                                     ],

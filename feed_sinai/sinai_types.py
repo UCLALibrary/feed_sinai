@@ -4,12 +4,13 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Annotated, Self
+from typing import List, Optional, Annotated, Self, Set, Iterable
 from uuid import UUID
 
 from pydantic import (
     AnyUrl,
     BaseModel as PydanticBaseModel,
+    computed_field,
     Field,
     StringConstraints,
     ConfigDict,
@@ -19,6 +20,28 @@ from pydantic import (
 
 class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(extra="forbid")
+
+    def deep_get(self, *names: str) -> set[str]:
+        result = set()
+
+        for name in names:
+            value = getattr(self, name, [])
+            if isinstance(value, List):
+                result.update(value)
+            else:
+                result.add(value)
+
+        for field_name in self.__class__.model_fields:
+            field_value = getattr(self, field_name, [])
+            if isinstance(field_value, List):
+                for obj in field_value:
+                    if hasattr(obj, "deep_get"):
+                        result.update(obj.deep_get(*names))
+            else:
+                if hasattr(field_value, "deep_get"):
+                    result.update(field_value.deep_get(*names))
+
+        return result
 
 
 NonEmptyStr = Annotated[
@@ -646,3 +669,21 @@ class ManuscriptObjectUnmerged(ManuscriptObject):
 class ManuscriptObjectMerged(ManuscriptObject):
     part: List[PartMerged]
     layer: List[InscribedLayerMerged] | None = Field(None, min_length=1)
+
+
+class ManuscriptSolrRecord(PydanticBaseModel):
+    id: str
+
+    has_model_ssim: List[str] = ["Work"]
+    visibility_ssi: str = "open"
+
+    manuscript_json_ss: str
+    descriptive_title_tesim: Set[str]
+    #     return [self.manuscript_json_ss.shelfmark]
+    uniform_title_tesim: Set[str]
+    # uniform_title_sim = copy_field("uniform_title_tesim")
+    # date_created_tesim: Set[str]
+    human_readable_language_tesim: Set[str]
+    # collection_ssi: str
+    # name_fields_index_tesim: Set[str]
+    # names_sim: Set[str]

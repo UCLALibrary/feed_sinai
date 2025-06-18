@@ -8,11 +8,12 @@ Output is pushed to a solr index suitable for use by https://github.com/UCLALibr
 
 import json
 from pathlib import Path
-import typing
+from typing import Any, Iterator, Optional
 import warnings
 
-import feed_sinai.sinai_types as st
+from pysolr import Solr, SolrError  # type: ignore
 
+import feed_sinai.sinai_types as st
 from feed_sinai.importer import Importer, MetadataRecord
 import logging
 
@@ -21,10 +22,11 @@ class SinaiJsonImporter:
     """Importer class to map data from"""
 
     base_path: Path
+    solr: Solr
 
-    def __init__(self, base_path: str):
-        super().__init__()
+    def __init__(self, base_path: str = ".", solr_url: Optional[str] = None):
         self.base_path = Path(base_path)
+        self.solr = Solr(solr_url, always_commit=True)
 
     @staticmethod
     def get_filename(ark: str):
@@ -91,7 +93,7 @@ class SinaiJsonImporter:
             interim.model_dump(serialize_as_any=True)
         )
 
-    def iterate_merged_records(self) -> typing.Iterator[st.ManuscriptObjectMerged]:
+    def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
         """Yield json records for manuscripts with other data embedded."""
 
         for path in (self.base_path / "ms_objs").glob("*.json"):
@@ -105,3 +107,20 @@ class SinaiJsonImporter:
             (self.base_path / "merged").mkdir(exist_ok=True)
             path = self.base_path / "merged" / self.get_filename(record.ark)
             path.write_text(record.model_dump_json(exclude_none=True))
+
+    def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
+        return json.loads(st.ManuscriptSolrRecord(
+            id=ms_obj.ark,
+            manuscript_json_ss=ms_obj.model_dump_json(exclude_none=True),
+            descriptive_title_tesim={*ms_obj.deep_get("desc_title")},
+            uniform_title_tesim={*ms_obj.deep_get("uniform_title")},
+            # date_created_tesim={""},  # TODO
+            human_readable_language_tesim={
+                getattr(x, "label", x) for x in ms_obj.deep_get("lang")
+            },
+            # name_fields_index_tesim=[*ms_obj.deep_get("")},  # TODO
+            # names_sim=[*ms_obj.deep_get("")},  # TODO
+        ).model_dump_json(exclude_none=True))
+
+    def load_to_solr(self):
+        self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])

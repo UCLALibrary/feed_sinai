@@ -1,7 +1,36 @@
+from typing import Optional, List
+
 from pydantic import ValidationError
 import pytest
 
 import feed_sinai.sinai_types as st
+
+
+class TestBaseModel:
+    class OtherModel(st.BaseModel):
+        child: "Optional[OtherModel]" = None
+        b: int
+        c: str
+
+    class ExampleModel(st.BaseModel):
+        children: "Optional[List[ExampleModel | OtherModel]]" = None
+        a: int
+        b: int
+
+    def test_deep_get(self):
+        test_obj = self.ExampleModel.model_validate(
+            {
+                "a": 1,
+                "b": 1,
+                "children": [
+                    {"a": 2, "b": 3, "children": [{"a": 5, "b": 8}]},
+                    {"a": 13, "b": 21},
+                    {"child": {"b": 55, "c": "no"}, "b": 34, "c": "nope"},
+                ],
+            }
+        )
+
+        assert test_obj.deep_get("a", "b") == {1, 2, 3, 5, 8, 13, 21, 34, 55}
 
 
 class TestLabelWithIdentifier:
