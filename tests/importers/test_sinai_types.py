@@ -2,30 +2,34 @@ from typing import Optional, List
 
 from pydantic import ValidationError
 import pytest
+from pathlib import Path
 
 import feed_sinai.sinai_types as st
 
 
-class TestBaseModel:
-    class OtherModel(st.BaseModel):
-        child: "Optional[OtherModel]" = None
-        b: int
-        c: str
+class ExampleModel(st.BaseModel):
+    children: "List[ExampleModel]" = []
+    a: Optional[int] = None
+    b: Optional[int] = None
+    c: Optional[str] = None
 
-    class ExampleModel(st.BaseModel):
-        children: "Optional[List[ExampleModel | OtherModel]]" = None
-        a: int
-        b: int
+
+class TestBaseModel:
+
+    def test_convert(self):
+        first = ExampleModel(a=1, b=2)
+        second = first.convert(ExampleModel, b=3)
+        assert second == ExampleModel(a=1, b=3)
 
     def test_deep_get(self):
-        test_obj = self.ExampleModel.model_validate(
+        test_obj = ExampleModel.model_validate(
             {
                 "a": 1,
                 "b": 1,
                 "children": [
                     {"a": 2, "b": 3, "children": [{"a": 5, "b": 8}]},
                     {"a": 13, "b": 21},
-                    {"child": {"b": 55, "c": "no"}, "b": 34, "c": "nope"},
+                    {"children": [{"b": 55, "c": "no"}], "b": 34, "c": "nope"},
                 ],
             }
         )
@@ -33,35 +37,35 @@ class TestBaseModel:
         assert test_obj.deep_get("a", "b") == {1, 2, 3, 5, 8, 13, 21, 34, 55}
 
 
-class TestLabelWithIdentifier:
+class TestControlledTerm:
+    CONTROLLED_TERM = st.ControlledTerm(id="abc", label="123")
+    MAN = st.ControlledTerm(id="man", label="Man")
+
     def test_happy_path(self):
-        result = st.LabelWithIdentifier.model_validate_json(
-            '{"id": "abc", "label": "123"}'
-        )
-        assert result.id == "abc"
-        assert result.label == "123"
+        result = st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}')
+        assert result == self.CONTROLLED_TERM
 
     def test_extra_field(self):
         with pytest.raises(ValidationError):
-            st.LabelWithIdentifier.model_validate_json(
+            st.ControlledTerm.model_validate_json(
                 '{"id": "abc", "label": "123"}, "other": "xyz"'
             )
 
     def test_missing_id(self):
         with pytest.raises(ValidationError):
-            st.LabelWithIdentifier.model_validate_json('{"label": "123"}')
+            st.ControlledTerm.model_validate_json('{"label": "123"}')
 
     def test_missing_value(self):
         with pytest.raises(ValidationError):
-            st.LabelWithIdentifier.model_validate_json('{"id": "abc"}')
+            st.ControlledTerm.model_validate_json('{"id": "abc"}')
 
     def test_empty_id(self):
         with pytest.raises(ValidationError):
-            st.LabelWithIdentifier.model_validate_json('{"id": ", "label": "123"}')
+            st.ControlledTerm.model_validate_json('{"id": ", "label": "123"}')
 
     def test_empty_value(self):
         with pytest.raises(ValidationError):
-            st.LabelWithIdentifier.model_validate_json('{"id": "abc", "label": "}')
+            st.ControlledTerm.model_validate_json('{"id": "abc", "label": "}')
 
 
 # class TestGender:
@@ -78,7 +82,7 @@ class TestLabelWithIdentifier:
 #         assert result == st.Gender.other
 
 #     def test_invalid_gender(self):
-#         """With appologies to the xenogender community, we are only tracking 'man', 'woman', and 'other"""
+#         """With appologies, we are only tracking 'man', 'woman', and 'other"""
 #         with pytest.raises(ValueError):
 #             st.Gender({"id": "something", "label": "else"})
 
@@ -90,12 +94,13 @@ class TestLabelWithIdentifier:
 
 
 class TestIso:
+    ISO = st.Iso(not_before="0010", not_after="0100")
+
     def test_good_iso(self):
-        result = st.Iso.model_validate_json(
-            '{"not_before": "0010", "not_after": "0100"}'
+        assert (
+            st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}')
+            == self.ISO
         )
-        assert result.not_before == "0010"
-        assert result.not_after == "0100"
 
     def test_no_notafter(self):
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
@@ -108,14 +113,16 @@ class TestIso:
 
 
 class TestDate:
+    DATE = st.Date(value="4th c. CE", iso=TestIso.ISO)
+
     def test_good_date(self):
         st.Date.model_validate_json(
             """
             {
                 "value": "4th c. CE",
                 "iso": {
-                    "not_before": "0301",
-                    "not_after": "0400"
+                    "not_before": "0010",
+                    "not_after": "0100"
                 }
             }
         """
@@ -205,9 +212,97 @@ class TestBibItem:
 
 
 class TestAgent:
+    EPHREM = st.Agent(
+        ark="ark:/21198/s1v887",
+        type=st.ControlledTerm(id="person", label="Person"),
+        pref_name="Ephrem",
+        alt_name=["Ephrem the Syrian", "ܐܦܪܝܡ"],
+        gender=TestControlledTerm.MAN,
+        floruit=st.Date(
+            value="303 CE-373 CE",
+            iso=st.Iso(not_before="0303", not_after="0373"),
+        ),
+        rel_con=[
+            st.RelConItem.model_validate(
+                {
+                    "label": "Ephraem, Syrus, Saint, 303-373",
+                    "uri": "http://viaf.org/viaf/100177778",
+                    "source": "VIAF",
+                }
+            ),
+            st.RelConItem.model_validate(
+                {
+                    "label": "Ephraem, Syrus, Saint, 303-373",
+                    "uri": "http://id.loc.gov/authorities/names/n50082928",
+                    "source": "LoC",
+                }
+            ),
+            st.RelConItem.model_validate(
+                {
+                    "label": "Ephrem, of Nisibis, 303-373",
+                    "uri": "https://w3id.org/haf/person/818572788967",
+                    "source": "HAF",
+                }
+            ),
+            st.RelConItem.model_validate(
+                {
+                    "label": "Ephrem",
+                    "uri": "http://syriaca.org/person/13",
+                    "source": "Syriaca",
+                }
+            ),
+            st.RelConItem.model_validate(
+                {
+                    "label": "Ephraem Graecus",
+                    "uri": "https://pinakes.irht.cnrs.fr/notices/auteur/995/",
+                    "source": "Pinakes",
+                }
+            ),
+        ],
+    )
+    THEODORE = st.Agent(
+        ark="ark:/21198/s1d01s",
+        type=st.ControlledTerm(id="person", label="Person"),
+        pref_name="Theodore the Studite",
+        alt_name=["Theodore Studites"],
+        gender=TestControlledTerm.MAN,
+        floruit=st.Date.model_validate(
+            {
+                "value": "759 CE-826 CE",
+                "iso": {"not_before": "0759", "not_after": "0826"},
+            }
+        ),
+        rel_con=[
+            st.RelConItem.model_validate(rc)
+            for rc in [
+                {
+                    "label": "Theodore, Studites, Saint, 759-826",
+                    "uri": "http://viaf.org/viaf/62875165",
+                    "source": "VIAF",
+                },
+                {
+                    "label": "Theodore, Studites, Saint, 759-826",
+                    "uri": "https://id.loc.gov/authorities/names/n81118597",
+                    "source": "LoC",
+                },
+                {
+                    "label": "Theodore, Studites, 759-826",
+                    "uri": "https://w3id.org/haf/person/636228715607",
+                    "source": "HAF",
+                },
+                {
+                    "label": "Theodorus Studita",
+                    "uri": "https://pinakes.irht.cnrs.fr/notices/auteur/2685/",
+                    "source": "Pinakes",
+                },
+            ]
+        ],
+    )
+
     def test_good_json(self):
-        result = st.Agent.model_validate_json(
-            """
+        assert (
+            st.Agent.model_validate_json(
+                """
         {
             "ark": "ark:/21198/s1d01s",
             "type": {"id": "person", "label": "Person"},
@@ -247,8 +342,9 @@ class TestAgent:
             ]
         }
         """
+            )
+            == self.THEODORE
         )
-        assert str(result.rel_con[2].uri) == "https://w3id.org/haf/person/636228715607"
 
     def test_bad_ark(self):
         with pytest.raises(ValidationError, match="String should match pattern"):
@@ -331,11 +427,19 @@ class TestUnitItem:
 
 
 class TestAssocNameItem:
-    def test_good_assoc_name_item(self):
-        st.AssocNameItem.model_validate_json(
-            """
+    EPHREM = st.AssocNameItem(
+        id="ark:/21198/s1v887",
+        as_written="ܝܘܚܢܢ ܒܪܝ ܬܐܘܕܘܪܘܣ",
+        role=st.ControlledTerm(id="scribe", label="Scribe"),
+        note=["The ARK is for Ephrem, to demo functionality"],
+    )
+
+    def test_good_TestAssocNameItem(self):
+        assert (
+            st.AssocNameItem.model_validate_json(
+                """
             { 
-                "id": "ark:/21198/s1v887", 
+                "id": "ark:/21198/s1v887",
                 "as_written": "ܝܘܚܢܢ ܒܪܝ ܬܐܘܕܘܪܘܣ", 
                 "role": { 
                     "id": "scribe", 
@@ -346,7 +450,13 @@ class TestAssocNameItem:
                 ] 
             }
         """
+            )
+            == self.EPHREM
         )
+
+    def test_good_TestAssocNameItemMerged(self):
+        result = self.EPHREM.convert(st.AssocNameItemMerged, agent=TestAgent.EPHREM)
+        # assert st.AssocNameItemMerged(name).name == TestAgent.EPHREM
 
 
 class TestAssocPlaceItem:
@@ -1545,8 +1655,8 @@ class TestCreation:
 #         """)
 
 
-class TestConceptualWork:
-    def test_good_ConceptualWork(self):
+class TestConceptualWorkUnmerged:
+    def test_good_ConceptualWorkUnmerged(self):
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/32278a93089ee067da48dac6adee5bb1ef888986/export_test/works/s1cs35.json"""
         st.ConceptualWork.model_validate_json(
             """

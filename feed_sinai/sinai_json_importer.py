@@ -37,9 +37,28 @@ class SinaiJsonImporter:
 
         return ark.replace("ark:/21198/", "").replace("/", "-") + ".json"
 
-    def get_conceptual_work(self, stub: st.WorkStub) -> st.ConceptualWork:
-        return st.ConceptualWork.model_validate_json(
-            (self.base_path / "works" / self.get_filename(stub.id)).read_text()
+    def get_agent(self, ark: str):
+        path = self.base_path / "agents" / self.get_filename(ark)
+        return st.Agent.model_validate_json(path.read_text())
+
+    def get_assoc_name_item(
+        self, raw: st.AssocNameItemUnmerged
+    ) -> st.AssocNameItemMerged:
+        return raw.convert(
+            st.AssocNameItemMerged, agent=self.get_agent(raw.id) if raw.id else None
+        )
+
+    def get_conceptual_work(self, stub: st.WorkStub) -> st.ConceptualWorkMerged:
+        path = self.base_path / "works" / self.get_filename(stub.id)
+        raw = st.ConceptualWorkUnmerged.model_validate_json(path.read_text())
+
+        return raw.convert(
+            st.ConceptualWorkMerged,
+            creator=(
+                [self.get_assoc_name_item(assoc_name) for assoc_name in raw.creator]
+                if raw.creator
+                else None
+            ),
         )
 
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
@@ -109,18 +128,20 @@ class SinaiJsonImporter:
             path.write_text(record.model_dump_json(exclude_none=True))
 
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
-        return json.loads(st.ManuscriptSolrRecord(
-            id=ms_obj.ark,
-            manuscript_json_ss=ms_obj.model_dump_json(exclude_none=True),
-            descriptive_title_tesim={*ms_obj.deep_get("desc_title")},
-            uniform_title_tesim={*ms_obj.deep_get("uniform_title")},
-            # date_created_tesim={""},  # TODO
-            human_readable_language_tesim={
-                getattr(x, "label", x) for x in ms_obj.deep_get("lang")
-            },
-            # name_fields_index_tesim=[*ms_obj.deep_get("")},  # TODO
-            # names_sim=[*ms_obj.deep_get("")},  # TODO
-        ).model_dump_json(exclude_none=True))
+        return json.loads(
+            st.ManuscriptSolrRecord(
+                id=ms_obj.ark,
+                manuscript_json_ss=ms_obj.model_dump_json(exclude_none=True),
+                descriptive_title_tesim={*ms_obj.deep_get("desc_title")},
+                uniform_title_tesim={*ms_obj.deep_get("uniform_title")},
+                # date_created_tesim={""},  # TODO
+                human_readable_language_tesim={
+                    getattr(x, "label", x) for x in ms_obj.deep_get("lang")
+                },
+                # name_fields_index_tesim=[*ms_obj.deep_get("")},  # TODO
+                # names_sim=[*ms_obj.deep_get("")},  # TODO
+            ).model_dump_json(exclude_none=True)
+        )
 
     def load_to_solr(self):
         self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
