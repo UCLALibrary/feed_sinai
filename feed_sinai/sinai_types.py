@@ -22,7 +22,7 @@ from pydantic import (
 SiblingModel = TypeVar("SiblingModel", bound=PydanticBaseModel)
 
 
-class BaseModel(PydanticBaseModel):
+class BaseModel(PydanticBaseModel, frozen=True):
     model_config = ConfigDict(extra="forbid")
 
     def convert(self, cls: type[SiblingModel], **updated_data) -> SiblingModel:

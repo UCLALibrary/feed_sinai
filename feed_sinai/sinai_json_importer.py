@@ -62,54 +62,46 @@ class SinaiJsonImporter:
         )
 
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
-        interim = st.WorkWitItem.model_validate(raw)
-        if isinstance(raw.work, st.WorkStub):
-            interim.work = self.get_conceptual_work(raw.work)
-
-        return st.WorkWitItemMerged.model_validate(
-            interim.model_dump(serialize_as_any=True)
+        return raw.convert(
+            st.WorkWitItemMerged,
+            work=(
+                raw.work
+                if isinstance(raw.work, st.WorkBrief)
+                else self.get_conceptual_work(raw.work)
+            ),
         )
 
     def get_text_unit(self, stub: st.TextUnitStub) -> st.TextUnit:
         path = self.base_path / "text_units" / self.get_filename(stub.id)
         raw = st.TextUnitUnmerged.model_validate_json(path.read_text())
-        interim = st.TextUnit.model_validate(raw)
 
-        interim.work_wit = [self.get_work_wit(work_wit) for work_wit in raw.work_wit]
-
-        return st.TextUnitMerged.model_validate(
-            interim.model_dump(serialize_as_any=True)
+        return raw.convert(
+            st.TextUnitMerged,
+            work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
         )
 
     def get_layer(self, layer: st.LayerStub) -> st.InscribedLayerMerged:
         path = self.base_path / "layers" / self.get_filename(layer.id)
         raw = st.InscribedLayerUnmerged.model_validate_json(path.read_text())
-        interim = st.InscribedLayer.model_validate(raw)
 
-        interim.text_unit = [
-            self.get_text_unit(text_unit) for text_unit in raw.text_unit
-        ]
-
-        return st.InscribedLayerMerged.model_validate(
-            interim.model_dump(serialize_as_any=True)
+        return raw.convert(
+            st.InscribedLayerMerged,
+            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
         )
 
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
-        interim = st.Part.model_validate(raw)
-        interim.layer = [self.get_layer(stub) for stub in raw.layer]
-
-        return st.PartMerged.model_validate(interim.model_dump(serialize_as_any=True))
+        return raw.convert(
+            st.PartMerged,
+            layer=[self.get_layer(stub) for stub in raw.layer] if raw.layer else None,
+        )
 
     def get_merged_manuscript(self, path: Path) -> st.ManuscriptObjectMerged:
         raw = st.ManuscriptObjectUnmerged.model_validate_json(path.read_text())
-        interim = st.ManuscriptObject.model_validate(raw)
 
-        interim.part = [self.get_part(stub) for stub in raw.part]
-        if raw.layer:
-            interim.layer = [self.get_layer(stub) for stub in raw.layer]
-
-        return st.ManuscriptObjectMerged.model_validate(
-            interim.model_dump(serialize_as_any=True)
+        return raw.convert(
+            st.ManuscriptObjectMerged,
+            part=[self.get_part(stub) for stub in raw.part] if raw.part else None,
+            layer=[self.get_layer(stub) for stub in raw.layer] if raw.layer else None,
         )
 
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
