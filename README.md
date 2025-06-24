@@ -1,63 +1,160 @@
 # feed_sinai
-Script to process CSVs into a Sinai-ready solr index.
 
-# Using feed_sinai.py
+Command line tool to load JSON content into a Solr index for the [Sinai Manuscripts Digital Library](https://digital.library.ucla.edu/) site.
 
-We recommend installing with [poetry](https://python-poetry.org) and [pyenv](https://github.com/pyenv/pyenv).  which can be installed with [homebrew](https://brew.sh):
+## Using feed_sinai
 
-```
-brew install pyenv
-curl -sSL https://install.python-poetry.org | python3 -
-```
+For basic use, you can install feed_sinai as a systemwide command directly from pypi, without having to first clone the repository.
 
-You may need to add `export PATH="~/.local/bin:$PATH"` to your shell profile.
+### Installation
 
-If you installed poetry using homebrew (as this document formerly recommended), you might run into some dependency issues. If this happens try `brew uninstall poetry` and the official installer as shown above
-
-To install dependencies in a virtual environment:
+We recommend installing with [pipx](https://pipx.pypa.io/). On MacOS, you can install pipx (and python!) with [homebrew](https://brew.sh):
 
 ```
+brew install pipx pyenv
+pipx ensurepath
+```
+
+Then:
+
+```
+pipx install feed_sinai
+```
+
+Pipx will install feed_sinai in its own virtualenv, but make the command accessible from anywhere so you don't need to active the virtualenv yourself.
+
+For JSON data to load, clone [https://github.com/uclalibrary/sinaiportal_data](https://github.com/uclalibrary/sinaiportal_data):
+```
+git clone git@github.com:UCLALibrary/feed_ursus.git
+```
+
+### Export JSON
+
+The [https://github.com/uclalibrary/sinaiportal_data](https://github.com/uclalibrary/sinaiportal_data) document data is spread across many files of different types. To merge these into a single nested JSON file per manuscript:
+```
+sinai export [path/to/repo/sinaiportal_data]
+```
+
+### Load to Solr
+
+This repo includes a docker-compose.yml file that will run local instances of solr and the sinaimanuscripts site for use in testing this script. To use them, first install [docker](https://docs.docker.com/install/) and [docker compose](https://docs.docker.com/compose/install/). Then run:
+
+```
+docker-compose up --detach
+docker-compose run web bundle exec rails db:setup
+```
+
+It might take a minute or so for solr to get up and running, at which point you should be able to see your new site at http://localhost:3000. Ursus will be empty, because you haven't loaded any data yet.
+
+To load data from a csv:
+
+```
+sinai load [path/to/repo/sinaiportal_data]
+```
+
+This will use the default URL for a solr instance, you can change this with the `--solr_url` option.
+```
+sinai load --solr_url=http://localhost:8983/solr/californica [path/to/repo/sinaiportal_data]
+```
+
+## Developing feed_sinai
+
+### Installing
+
+For development, clone the repository and use poetry to set up the virtualenv:
+
+```
+git clone git@github.com:UCLALibrary/feed_sinai.git
+cd feed_sinai
+pipx install poetry
+poetry self add poetry-git-version-plugin
 poetry install
 ```
 
-Then, to run commands inside the new virtual environment, you can either enter `poetry shell` to enter the virtual environment, or you can prefix your commands with `poetry run`.
-
-You can then use the script to convert a csv into a json document that follows the data model of an Sinai solr index:
+Then, to activate the virtualenv:
 
 ```
-poetry run feed_sinai.py [path/to/your.csv]
+source .venv/bin/activate
 ```
 
-For testing, you can run a local instance of the Sinai Manuscripts site in docker by following the instructions at https://github.com/uclalibrary/sinaimanuscripts.
+The following will assume the virtualenv is active. You could also run e.g. `poetry run sinai [...]`
 
-To load into the local site:
+### Using the development version
 
+Same as when installed with pipx, once you've activated the virtualenv:
 ```
-poetry run ./feed_sinai.py [path/to/your.csv] --solr_url http://localhost:8983/solr/sinai
-```
-
-When the command finishes running, you can see your new site at http://localhost:3004
-
-# Running the test suite
-
-First, install the dev dependencies and enter the virtualenv:
-```
-poetry install --dev
-poetry shell
+sinai load [path/to/repo/sinaiportal_data]
 ```
 
-Then you can simply run:
+### Running the tests
+
+Tests are written for [pytest](https://docs.pytest.org/en/latest/):
+
 ```
-pytest --mypy --pylint
+pytest
 ```
 
-This will run:
-- [pylint](https://www.pylint.org/), a linter, via [pytest-pylint](https://github.com/carsongee/pytest-pylint)
-- [mypy](http://mypy-lang.org/), a static type checker, via [pytest-mypy](https://github.com/dbader/pytest-mypy/)
-- the test suite, written using [pytest](https://docs.pytest.org/en/latest/)
+### Running the formatter and linters:
+
+black (formatter) will run in check mode in ci, so make sure you run it before committing:
+
+```
+black .
+```
+
+flake8 (linter) isn't currently running in ci, but should be put back in soon:
+
+```
+flake8
+```
+
+pylint (linter) isn't currently running in ci, but should be put back in soon:
+
+```
+pylint
+```
+
+mypy (static type checker) isn't currently running in ci, but should be put back in soon:
+
+```
+mypy
+```
+
+### VSCode Debugger Configuration
+
+To debug with VSCode, the python environment has to be created within the project directory.
+
+If it exists, remove the existing setup and install in the project directory:
+
+- `poetry env list`
+- `poetry env remove <name of environment you want to delete>`
+- `poetry config virtualenvs.in-project true`
+- `poetry install`
+
+Add an appropriate `.vscode/launch.json`, this assumes you have the python debugger extension installed.
+
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Run the feed_ursus module",
+            "type": "debugpy",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "console": "integratedTerminal",
+            "module": "feed_ursus.feed_ursus",
+            "justMyCode": true,
+        }
+    ]
+}
+```
 
 # Caveats
 
 ## IIIF Manifests
 
-When importing a work, the script will always assume that a IIIF manifest exists at https://iiif.library.ucla.edu/[ark]/manifest, where [ark] is the URL-encoded Archival Resource Key of the work. This link should work, as long as a manifest has been pushed to that location by importing the work into [Fester](https://github.com/UCLALibrary/fester) or [Californica](https://github.com/UCLALibrary/californica). If you haven't done one of those, obviously, the link will fail and the image won't be visible, but metadata will import and be visible. A manifest can then be created and pushed to the expected location without re-running feed_sinai.py.
+When importing a work, the script will always assume that a IIIF manifest exists at https://iiif.library.ucla.edu/[ark]/manifest, where [ark] is the URL-encoded Archival Resource Key of the work. This link should work, as long as a manifest has been pushed to that location by importing the work into [Fester](https://github.com/UCLALibrary/fester) or [Californica](https://github.com/UCLALibrary/californica). If you haven't done one of those, obviously, the link will fail and the image won't be visible, but metadata will import and be visible. A manifest can then be created and pushed to the expected location without re-running feed_ursus.py.

@@ -1,0 +1,38 @@
+version: "3.6"
+
+services:
+  web:
+    image: uclalibrary/sinai
+    depends_on:
+      - db
+      - solr
+    env_file:
+      - ./dotenv.sample
+    environment:
+      DATABASE_HOST: db
+      IIIF_URL: https://californica-test.library.ucla.edu/concern/works
+      THUMBNAIL_BASE_URL: http://californica-test.library.ucla.edu
+      SOLR_URL: http://solr:8983/solr/californica
+      SOLR_TEST_URL: http://solr_test:8983/solr/californica
+    ports:
+      - "127.0.0.1:3000:3000"
+    working_dir: /sinai
+
+  db:
+    image: mysql:5.6
+    volumes:
+      - ./docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d
+      - mysql_data:/var/lib/mysql
+    # ports:
+    #   - "127.0.0.1:3306:3306"
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
+
+  solr:
+    image: uclalibrary/solr-ursus:7.4
+    ports:
+      - '127.0.0.1:8983:8983'
+
+
+volumes:
+  mysql_data:
