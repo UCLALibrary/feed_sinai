@@ -8,7 +8,7 @@ from datetime import datetime
 from dateutil import parser
 
 
-NORMALIZED_RANGE = re.compile(r"(.*)/(.*)")
+NORMALIZED_RANGE = re.compile(r'(.*)/(.*)')
 
 
 def get_dates(normalized_dates: typing.Any):

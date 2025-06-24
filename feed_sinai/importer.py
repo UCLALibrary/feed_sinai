@@ -21,8 +21,8 @@ MetadataRecord = typing.Dict[str, MetadataValues]
 MappingFunction = typing.Callable[[MetadataRecord], MetadataValues]
 FieldSource = MappingFunction | str
 
-SOLR_SUFFIXES = {"text": "te", "symbol": "s", "date": "dt", "integer": "i"}
-PYTHON_TYPES = {"text": str, "symbol": str, "date": date, "integer": int}
+SOLR_SUFFIXES = {'text': 'te', 'symbol': 's', 'date': 'dt', 'integer': 'i'}
+PYTHON_TYPES = {'text': str, 'symbol': str, 'date': date, 'integer': int}
 
 
 def listify(item: MetadataValues) -> list[MetadataValue]:
@@ -41,7 +41,7 @@ class Field:
 
     sources: list[FieldSource]
     name: str | None
-    field_type: typing.Literal["text", "symbol", "date", "integer"]
+    field_type: typing.Literal['text', 'symbol', 'date', 'integer']
     stored: bool
     indexed: bool
     multivalued: bool
@@ -53,7 +53,7 @@ class Field:
     def __init__(
         self,
         *sources: FieldSource,
-        field_type="text",
+        field_type='text',
         stored=True,
         indexed=True,
         multivalued=True,
@@ -94,7 +94,7 @@ class Field:
                 yield from listify(source(row))
             else:
                 warnings.warn(
-                    "sources must be callable, or strings representing field names"
+                    'sources must be callable, or strings representing field names'
                 )
 
     def map_field(self, row: MetadataRecord) -> MetadataRecord:
@@ -115,7 +115,7 @@ class Field:
         else:
             if len(values) > 1:
                 warnings.warn(
-                    "Got multiple values for %s. Using %s and discarding the rest (%s)",
+                    'Got multiple values for %s. Using %s and discarding the rest (%s)',
                     self.sources,
                     values[0],
                     values[1:],
@@ -132,20 +132,20 @@ class Field:
 
         suffixes = [
             SOLR_SUFFIXES[self.field_type]
-            + ("s" if self.stored else "")
-            + ("i" if self.indexed else "")
-            + ("m" if self.multivalued else "")
+            + ('s' if self.stored else '')
+            + ('i' if self.indexed else '')
+            + ('m' if self.multivalued else '')
         ]
 
-        if self.facet and self.field_type == "text":
+        if self.facet and self.field_type == 'text':
             suffixes.append(
-                "s"
+                's'
                 # No second 's' because we don't need to store the duplicate facet field
-                + ("i" if self.indexed else "")
-                + ("m" if self.multivalued else "")
+                + ('i' if self.indexed else '')
+                + ('m' if self.multivalued else '')
             )
 
-        self.solr_names = [f"{self.name}_{suffix}" for suffix in suffixes]
+        self.solr_names = [f'{self.name}_{suffix}' for suffix in suffixes]
         return self.solr_names
 
 
@@ -155,17 +155,17 @@ class Importer:
 
     ingest_id: str
 
-    id = Field("Item ARK", field_type="symbol", multivalued=False, solr_names=("id",))
-    ark = Field("Item ARK", field_type="symbol", multivalued=False)
+    id = Field('Item ARK', field_type='symbol', multivalued=False, solr_names=('id',))
+    ark = Field('Item ARK', field_type='symbol', multivalued=False)
     record_origin = Field(
-        lambda x: "feed_sinai", field_type="symbol", multivalued=False
+        lambda x: 'feed_sinai', field_type='symbol', multivalued=False
     )
 
     _mapped_fields: list[Field]
     _derived_fields: list[Field]
 
     def __init__(self):
-        self.ingest_id = f"{datetime.now(timezone.utc).isoformat()}-{getuser()}"
+        self.ingest_id = f'{datetime.now(timezone.utc).isoformat()}-{getuser()}'
 
         self._mapped_fields = []
         self._derived_fields = []
@@ -198,12 +198,12 @@ class Importer:
             }
         )
 
-        result.update({"ingest_id_ssi": self.ingest_id})
+        result.update({'ingest_id_ssi': self.ingest_id})
 
         return result
 
     def import_csv_files(self, *filenames: str) -> typing.Iterator[MetadataRecord]:
         """Iterate over input fiels, yielding mapped metadata records"""
         for filename in filenames:
-            for row in csv.DictReader(open(filename, encoding="utf-8")):
+            for row in csv.DictReader(open(filename, encoding='utf-8')):
                 yield self.map_record(row)

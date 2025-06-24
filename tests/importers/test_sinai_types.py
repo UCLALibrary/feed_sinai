@@ -2,20 +2,18 @@ from typing import Optional, List
 
 from pydantic import ValidationError
 import pytest
-from pathlib import Path
 
 import feed_sinai.sinai_types as st
 
 
 class ExampleModel(st.BaseModel):
-    children: "List[ExampleModel]" = []
+    children: 'List[ExampleModel]' = []
     a: Optional[int] = None
     b: Optional[int] = None
     c: Optional[str] = None
 
 
 class TestBaseModel:
-
     def test_convert(self):
         first = ExampleModel(a=1, b=2)
         second = first.convert(ExampleModel, b=3)
@@ -24,22 +22,22 @@ class TestBaseModel:
     def test_deep_get(self):
         test_obj = ExampleModel.model_validate(
             {
-                "a": 1,
-                "b": 1,
-                "children": [
-                    {"a": 2, "b": 3, "children": [{"a": 5, "b": 8}]},
-                    {"a": 13, "b": 21},
-                    {"children": [{"b": 55, "c": "no"}], "b": 34, "c": "nope"},
+                'a': 1,
+                'b': 1,
+                'children': [
+                    {'a': 2, 'b': 3, 'children': [{'a': 5, 'b': 8}]},
+                    {'a': 13, 'b': 21},
+                    {'children': [{'b': 55, 'c': 'no'}], 'b': 34, 'c': 'nope'},
                 ],
             }
         )
 
-        assert test_obj.deep_get("a", "b") == {1, 2, 3, 5, 8, 13, 21, 34, 55}
+        assert test_obj.deep_get('a', 'b') == {1, 2, 3, 5, 8, 13, 21, 34, 55}
 
 
 class TestControlledTerm:
-    CONTROLLED_TERM = st.ControlledTerm(id="abc", label="123")
-    MAN = st.ControlledTerm(id="man", label="Man")
+    CONTROLLED_TERM = st.ControlledTerm(id='abc', label='123')
+    MAN = st.ControlledTerm(id='man', label='Man')
 
     def test_happy_path(self):
         result = st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}')
@@ -47,9 +45,7 @@ class TestControlledTerm:
 
     def test_extra_field(self):
         with pytest.raises(ValidationError):
-            st.ControlledTerm.model_validate_json(
-                '{"id": "abc", "label": "123"}, "other": "xyz"'
-            )
+            st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}, "other": "xyz"')
 
     def test_missing_id(self):
         with pytest.raises(ValidationError):
@@ -94,17 +90,14 @@ class TestControlledTerm:
 
 
 class TestIso:
-    ISO = st.Iso(not_before="0010", not_after="0100")
+    ISO = st.Iso(not_before='0010', not_after='0100')
 
     def test_good_iso(self):
-        assert (
-            st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}')
-            == self.ISO
-        )
+        assert st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}') == self.ISO
 
     def test_no_notafter(self):
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
-        assert result.not_before == "0010"
+        assert result.not_before == '0010'
         assert result.not_after is None
 
     def test_no_notbefore(self):
@@ -113,7 +106,7 @@ class TestIso:
 
 
 class TestDate:
-    DATE = st.Date(value="4th c. CE", iso=TestIso.ISO)
+    DATE = st.Date(value='4th c. CE', iso=TestIso.ISO)
 
     def test_good_date(self):
         st.Date.model_validate_json(
@@ -140,7 +133,7 @@ class TestRelConItem:
             }
         """
         )
-        assert result.label == "Onuphrius, Saint, -approximately 400"
+        assert result.label == 'Onuphrius, Saint, -approximately 400'
         assert result.source == st.RelatedConceptSource.HAF
 
     def test_invalid_source(self):
@@ -167,7 +160,7 @@ class TestRefnoItem:
             }
         """
         )
-        assert result.idno == "2836.001"
+        assert result.idno == '2836.001'
 
 
 class TestBibItem:
@@ -184,7 +177,7 @@ class TestBibItem:
             }
         """
         )
-        assert result.type.id == "ref"
+        assert result.type.id == 'ref'
 
 
 # @pytest.mark.xfail
@@ -213,87 +206,87 @@ class TestBibItem:
 
 class TestAgent:
     EPHREM = st.Agent(
-        ark="ark:/21198/s1v887",
-        type=st.ControlledTerm(id="person", label="Person"),
-        pref_name="Ephrem",
-        alt_name=["Ephrem the Syrian", "ܐܦܪܝܡ"],
+        ark='ark:/21198/s1v887',
+        type=st.ControlledTerm(id='person', label='Person'),
+        pref_name='Ephrem',
+        alt_name=['Ephrem the Syrian', 'ܐܦܪܝܡ'],
         gender=TestControlledTerm.MAN,
         floruit=st.Date(
-            value="303 CE-373 CE",
-            iso=st.Iso(not_before="0303", not_after="0373"),
+            value='303 CE-373 CE',
+            iso=st.Iso(not_before='0303', not_after='0373'),
         ),
         rel_con=[
             st.RelConItem.model_validate(
                 {
-                    "label": "Ephraem, Syrus, Saint, 303-373",
-                    "uri": "http://viaf.org/viaf/100177778",
-                    "source": "VIAF",
+                    'label': 'Ephraem, Syrus, Saint, 303-373',
+                    'uri': 'http://viaf.org/viaf/100177778',
+                    'source': 'VIAF',
                 }
             ),
             st.RelConItem.model_validate(
                 {
-                    "label": "Ephraem, Syrus, Saint, 303-373",
-                    "uri": "http://id.loc.gov/authorities/names/n50082928",
-                    "source": "LoC",
+                    'label': 'Ephraem, Syrus, Saint, 303-373',
+                    'uri': 'http://id.loc.gov/authorities/names/n50082928',
+                    'source': 'LoC',
                 }
             ),
             st.RelConItem.model_validate(
                 {
-                    "label": "Ephrem, of Nisibis, 303-373",
-                    "uri": "https://w3id.org/haf/person/818572788967",
-                    "source": "HAF",
+                    'label': 'Ephrem, of Nisibis, 303-373',
+                    'uri': 'https://w3id.org/haf/person/818572788967',
+                    'source': 'HAF',
                 }
             ),
             st.RelConItem.model_validate(
                 {
-                    "label": "Ephrem",
-                    "uri": "http://syriaca.org/person/13",
-                    "source": "Syriaca",
+                    'label': 'Ephrem',
+                    'uri': 'http://syriaca.org/person/13',
+                    'source': 'Syriaca',
                 }
             ),
             st.RelConItem.model_validate(
                 {
-                    "label": "Ephraem Graecus",
-                    "uri": "https://pinakes.irht.cnrs.fr/notices/auteur/995/",
-                    "source": "Pinakes",
+                    'label': 'Ephraem Graecus',
+                    'uri': 'https://pinakes.irht.cnrs.fr/notices/auteur/995/',
+                    'source': 'Pinakes',
                 }
             ),
         ],
     )
     THEODORE = st.Agent(
-        ark="ark:/21198/s1d01s",
-        type=st.ControlledTerm(id="person", label="Person"),
-        pref_name="Theodore the Studite",
-        alt_name=["Theodore Studites"],
+        ark='ark:/21198/s1d01s',
+        type=st.ControlledTerm(id='person', label='Person'),
+        pref_name='Theodore the Studite',
+        alt_name=['Theodore Studites'],
         gender=TestControlledTerm.MAN,
         floruit=st.Date.model_validate(
             {
-                "value": "759 CE-826 CE",
-                "iso": {"not_before": "0759", "not_after": "0826"},
+                'value': '759 CE-826 CE',
+                'iso': {'not_before': '0759', 'not_after': '0826'},
             }
         ),
         rel_con=[
             st.RelConItem.model_validate(rc)
             for rc in [
                 {
-                    "label": "Theodore, Studites, Saint, 759-826",
-                    "uri": "http://viaf.org/viaf/62875165",
-                    "source": "VIAF",
+                    'label': 'Theodore, Studites, Saint, 759-826',
+                    'uri': 'http://viaf.org/viaf/62875165',
+                    'source': 'VIAF',
                 },
                 {
-                    "label": "Theodore, Studites, Saint, 759-826",
-                    "uri": "https://id.loc.gov/authorities/names/n81118597",
-                    "source": "LoC",
+                    'label': 'Theodore, Studites, Saint, 759-826',
+                    'uri': 'https://id.loc.gov/authorities/names/n81118597',
+                    'source': 'LoC',
                 },
                 {
-                    "label": "Theodore, Studites, 759-826",
-                    "uri": "https://w3id.org/haf/person/636228715607",
-                    "source": "HAF",
+                    'label': 'Theodore, Studites, 759-826',
+                    'uri': 'https://w3id.org/haf/person/636228715607',
+                    'source': 'HAF',
                 },
                 {
-                    "label": "Theodorus Studita",
-                    "uri": "https://pinakes.irht.cnrs.fr/notices/auteur/2685/",
-                    "source": "Pinakes",
+                    'label': 'Theodorus Studita',
+                    'uri': 'https://pinakes.irht.cnrs.fr/notices/auteur/2685/',
+                    'source': 'Pinakes',
                 },
             ]
         ],
@@ -347,7 +340,7 @@ class TestAgent:
         )
 
     def test_bad_ark(self):
-        with pytest.raises(ValidationError, match="String should match pattern"):
+        with pytest.raises(ValidationError, match='String should match pattern'):
             st.Agent.model_validate_json(
                 """
             {
@@ -428,10 +421,10 @@ class TestUnitItem:
 
 class TestAssocNameItem:
     EPHREM = st.AssocNameItem(
-        id="ark:/21198/s1v887",
-        as_written="ܝܘܚܢܢ ܒܪܝ ܬܐܘܕܘܪܘܣ",
-        role=st.ControlledTerm(id="scribe", label="Scribe"),
-        note=["The ARK is for Ephrem, to demo functionality"],
+        id='ark:/21198/s1v887',
+        as_written='ܝܘܚܢܢ ܒܪܝ ܬܐܘܕܘܪܘܣ',
+        role=st.ControlledTerm(id='scribe', label='Scribe'),
+        note=['The ARK is for Ephrem, to demo functionality'],
     )
 
     def test_good_TestAssocNameItem(self):
@@ -456,7 +449,7 @@ class TestAssocNameItem:
 
     def test_good_TestAssocNameItemMerged(self):
         result = self.EPHREM.convert(st.AssocNameItemMerged, agent=TestAgent.EPHREM)
-        # assert st.AssocNameItemMerged(name).name == TestAgent.EPHREM
+        assert result.agent == TestAgent.EPHREM
 
 
 class TestAssocPlaceItem:
@@ -1470,10 +1463,7 @@ class TestManuscriptObject:
             }
         """
         )
-        assert (
-            result.image_provenance.program[0].camera_operator[0]
-            == "Damianos Kasotakis"
-        )
+        assert result.image_provenance.program[0].camera_operator[0] == 'Damianos Kasotakis'
 
 
 class TestWorkStub:
@@ -1557,7 +1547,7 @@ class TestWorkWitItem:
         assert isinstance(result.work, st.WorkBrief)
 
     def test_bad_mixed_work_type(self):
-        with pytest.raises(ValidationError, match="Extra inputs are not permitted"):
+        with pytest.raises(ValidationError, match='Extra inputs are not permitted'):
             st.WorkWitItem.model_validate_json(
                 """
                 {

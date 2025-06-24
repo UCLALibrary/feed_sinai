@@ -4,14 +4,12 @@
 
 from datetime import datetime
 from enum import Enum
-from pathlib import Path
 from typing import List, Optional, Annotated, Self, Set, TypeVar
 from uuid import UUID
 
 from pydantic import (
     AnyUrl,
     BaseModel as PydanticBaseModel,
-    computed_field,
     Field,
     StringConstraints,
     ConfigDict,
@@ -19,17 +17,15 @@ from pydantic import (
 )
 
 
-SiblingModel = TypeVar("SiblingModel", bound=PydanticBaseModel)
+SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
 
 
 class BaseModel(PydanticBaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra='forbid', frozen=True)
 
     def convert(self, cls: type[SiblingModel], **updated_data) -> SiblingModel:
         data = (
-            self.model_dump(
-                exclude_unset=True, exclude_none=True, exclude_defaults=True
-            )
+            self.model_dump(exclude_unset=True, exclude_none=True, exclude_defaults=True)
             | updated_data
         )
         return cls(**data)
@@ -49,10 +45,10 @@ class BaseModel(PydanticBaseModel):
             field_value = getattr(self, field_name, [])
             if isinstance(field_value, List):
                 for obj in field_value:
-                    if hasattr(obj, "deep_get"):
+                    if hasattr(obj, 'deep_get'):
                         result.update(obj.deep_get(*names))
             else:
-                if hasattr(field_value, "deep_get"):
+                if hasattr(field_value, 'deep_get'):
                     result.update(field_value.deep_get(*names))
 
         return result
@@ -65,7 +61,7 @@ NonEmptyStr = Annotated[
 
 Ark = Annotated[
     str,
-    StringConstraints(pattern=r"^ark:/21198/([a-z]|[0-9])+"),
+    StringConstraints(pattern=r'^ark:/21198/([a-z]|[0-9])+'),
 ]
 
 
@@ -98,13 +94,13 @@ class Date(BaseModel):
 
 
 class RelatedConceptSource(Enum):
-    HAF = "HAF"
-    LoC = "LoC"
-    Perseus = "Perseus"
-    Pinakes = "Pinakes"
-    Pleiades = "Pleiades"
-    Syriaca = "Syriaca"
-    VIAF = "VIAF"
+    HAF = 'HAF'
+    LoC = 'LoC'
+    Perseus = 'Perseus'
+    Pinakes = 'Pinakes'
+    Pleiades = 'Pleiades'
+    Syriaca = 'Syriaca'
+    VIAF = 'VIAF'
 
 
 class RelConItem(BaseModel):
@@ -114,9 +110,9 @@ class RelConItem(BaseModel):
 
 
 class ReferenceNumberSource(Enum):
-    CPG = "CPG"
-    CPL = "CPL"
-    TLG = "TLG"
+    CPG = 'CPG'
+    CPL = 'CPL'
+    TLG = 'TLG'
 
 
 class RefnoItem(BaseModel):
@@ -140,13 +136,13 @@ class RelItem(BaseModel):
 
 
 class RelAgentItem(BaseModel):
-    id: Ark = Field(..., description="A unique Archival Resource Key (ARK)")
+    id: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     source: Optional[List[str]] = None
     rel: List[RelItem]
 
 
 class RelPlaceItem(BaseModel):
-    id: Ark = Field(..., description="A unique Archival Resource Key (ARK)")
+    id: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     source: Optional[List[str]] = None
     rel: List[RelItem]
 
@@ -155,11 +151,11 @@ class CataloguerItem(BaseModel):
     message: NonEmptyStr
     contributor: Optional[NonEmptyStr] = Field(
         None,
-        description="The person responsible for the intellectual contributions made to the record via this change",
+        description='The person responsible for the intellectual contributions made to the record via this change',
     )
     added_by: NonEmptyStr = Field(
         ...,
-        description="The user account responsible for editing the JSON record, likely supplied by the content management system",
+        description='The user account responsible for editing the JSON record, likely supplied by the content management system',
     )
     timestamp: datetime
 
@@ -226,10 +222,10 @@ class AssocNameItem(BaseModel):
 class AssocNameItemMerged(AssocNameItem):
     agent: Optional[Agent] = None
 
-    @model_validator(mode="after")
+    @model_validator(mode='after')
     def agent_record_loaded(self) -> Self:
         if self.id and not self.agent:
-            raise ValueError("has agent id but agent record not loaded")
+            raise ValueError('has agent id but agent record not loaded')
         return self
 
 
@@ -310,10 +306,10 @@ class Contents(BaseModel):
     locus: Optional[NonEmptyStr] = None
     note: Optional[List[str]] = None
 
-    @model_validator(mode="after")
+    @model_validator(mode='after')
     def has_label_or_work_id(self) -> Self:
         if not (self.label or self.work_id):
-            raise ValueError("`Contents.label` and `.work_id` cannot both be None")
+            raise ValueError('`Contents.label` and `.work_id` cannot both be None')
         return self
 
 
@@ -321,7 +317,7 @@ class WorkWitItem(BaseModel):
     work: WorkBrief | WorkStub | ConceptualWorkMerged
     alt_title: Optional[str] = Field(
         None,
-        description="An alternative title providing witness-specific information about the work",
+        description='An alternative title providing witness-specific information about the work',
     )
     as_written: Optional[NonEmptyStr] = None
     locus: Optional[NonEmptyStr] = None
@@ -399,9 +395,7 @@ class TextUnit(BaseModel):
     summary: Optional[NonEmptyStr] = None
     locus: Optional[NonEmptyStr] = None
     lang: List[ControlledTerm] = Field(..., min_length=1)
-    work_wit: List[WorkWitItemUnmerged] | List[WorkWitItemMerged] = Field(
-        ..., min_length=1
-    )
+    work_wit: List[WorkWitItemUnmerged] | List[WorkWitItemMerged] = Field(..., min_length=1)
     para: Optional[List[ParaItem]] = None
     features: Optional[List[ControlledTerm]] = None
     note: Optional[List[NoteItem]] = None
@@ -458,7 +452,7 @@ class LayoutItem(BaseModel):
 
 
 class TextUnitStub(BaseModel):
-    id: Ark = Field(..., description="A unique Archival Resource Key (ARK)")
+    id: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     label: NonEmptyStr
     locus: Optional[NonEmptyStr] = None
 
@@ -479,15 +473,13 @@ class RelatedMs(BaseModel):
 class InscribedLayer(BaseModel):
     ark: Ark
     reconstruction: bool
-    state: ControlledTerm = Field(
-        ..., description="The current state of the inscribed layer"
-    )
+    state: ControlledTerm = Field(..., description='The current state of the inscribed layer')
     label: NonEmptyStr
     locus: Optional[NonEmptyStr] = None
     summary: Optional[NonEmptyStr] = None
     extent: Optional[NonEmptyStr] = Field(
         None,
-        description="The extent, expressed in number of folios, which comprise the manuscript object",
+        description='The extent, expressed in number of folios, which comprise the manuscript object',
     )
     writing: List[WritingItem] = Field(..., min_length=1)
     ink: Optional[List[InkItem]] = None
@@ -544,7 +536,7 @@ class Part(BaseModel):
     support: List[ControlledTerm] = Field(..., min_length=1)
     extent: Optional[NonEmptyStr] = Field(
         None,
-        description="The extent, expressed in number of folios, which comprise the manuscript object",
+        description='The extent, expressed in number of folios, which comprise the manuscript object',
     )
     dim: Optional[NonEmptyStr] = Field(
         None,
@@ -577,14 +569,14 @@ class ViscodexItem(BaseModel):
 
 
 class TextDirection(Enum):
-    right_to_left = "right-to-left"
-    top_to_bottom = "top-to-bottom"
-    bottom_to_top = "bottom-to-top"
+    right_to_left = 'right-to-left'
+    top_to_bottom = 'top-to-bottom'
+    bottom_to_top = 'bottom-to-top'
 
 
 class Behavior(Enum):
-    paged = "paged"
-    individuals = "individuals"
+    paged = 'paged'
+    individuals = 'individuals'
 
 
 class IiifItem(BaseModel):
@@ -602,7 +594,7 @@ class Image(BaseModel):
     delivery: Optional[str] = None
     msi_processing: Optional[List[str]] = Field(
         None,
-        description="Names of the person(s) responsible for processing the MSI data for this record",
+        description='Names of the person(s) responsible for processing the MSI data for this record',
     )
     program: Optional[str] = None
     condition_category: Optional[str] = None
@@ -632,7 +624,7 @@ class ImageProvenanceProgramItem(BaseModel):
     delivery: Optional[str] = None
     msi_processing: Optional[List[str]] = Field(
         None,
-        description="Names of the person(s) responsible for processing the MSI data for this record",
+        description='Names of the person(s) responsible for processing the MSI data for this record',
     )
     condition_category: Optional[str] = None
     note: Optional[List[str]] = None
@@ -650,14 +642,14 @@ class ImageProvenance(BaseModel):
 
 
 class ManuscriptObject(BaseModel):
-    ark: Ark = Field(..., description="A unique Archival Resource Key (ARK)")
+    ark: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     reconstruction: bool
     type: ControlledTerm
     shelfmark: NonEmptyStr
     summary: Optional[NonEmptyStr] = None
     extent: Optional[NonEmptyStr] = Field(
         ...,
-        description="The extent, expressed in number of folios, which comprise the manuscript object",
+        description='The extent, expressed in number of folios, which comprise the manuscript object',
     )
     weight: Optional[NonEmptyStr] = Field(
         None, description="A string expression of the manuscript object's weight"
@@ -666,22 +658,18 @@ class ManuscriptObject(BaseModel):
         None,
         description="A string expression of an object's dimensions, whether manuscript block, folio, or writing area",
     )
-    state: ControlledTerm = Field(
-        ..., description="The current state of the manuscript object"
-    )
+    state: ControlledTerm = Field(..., description='The current state of the manuscript object')
     fol: Optional[NonEmptyStr] = Field(
         None,
-        description="A string expressing the foliation of the object in a semi-controlled format",
+        description='A string expressing the foliation of the object in a semi-controlled format',
     )
     coll: Optional[NonEmptyStr] = Field(
         None,
-        description="A string expressing the collation of the object following a semi-controlled format, such as a collational formula",
+        description='A string expressing the collation of the object following a semi-controlled format, such as a collational formula',
     )
     features: Optional[List[ControlledTerm]] = None
     part: List[Part] | List[PartUnmerged] | List[PartMerged] = Field(..., min_length=1)
-    layer: List[LayerStub] | List[InscribedLayerMerged] | None = Field(
-        None, min_length=1
-    )
+    layer: List[LayerStub] | List[InscribedLayerMerged] | None = Field(None, min_length=1)
     para: Optional[List[ParaItem]] = None
     location: List[LocationItem]
     assoc_date: Optional[List[AssocDateItem]] = None
@@ -721,8 +709,8 @@ class ManuscriptObjectMerged(ManuscriptObject):
 class ManuscriptSolrRecord(PydanticBaseModel):
     id: str
 
-    has_model_ssim: List[str] = ["Work"]
-    visibility_ssi: str = "open"
+    has_model_ssim: List[str] = ['Work']
+    visibility_ssi: str = 'open'
 
     manuscript_json_ss: str
     descriptive_title_tesim: Set[str]

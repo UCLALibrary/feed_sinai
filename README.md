@@ -93,30 +93,24 @@ Tests are written for [pytest](https://docs.pytest.org/en/latest/):
 pytest
 ```
 
-### Running the formatter and linters:
+### Running the linter / formatter:
 
-black (formatter) will run in check mode in ci, so make sure you run it before committing:
-
-```
-black .
-```
-
-flake8 (linter) isn't currently running in ci, but should be put back in soon:
+[ruff](https://docs.astral.sh/ruff/) will run as a linter in CI. To run locally:
 
 ```
-flake8
+ruff check .
 ```
 
-pylint (linter) isn't currently running in ci, but should be put back in soon:
+it can also be used to auto-format the codebase:
 
 ```
-pylint
+ruff format .
 ```
 
 mypy (static type checker) isn't currently running in ci, but should be put back in soon:
 
 ```
-mypy
+mypy .
 ```
 
 ### VSCode Debugger Configuration

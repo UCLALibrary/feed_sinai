@@ -9,12 +9,10 @@ Output is pushed to a solr index suitable for use by https://github.com/UCLALibr
 import json
 from pathlib import Path
 from typing import Any, Iterator, Optional
-import warnings
 
-from pysolr import Solr, SolrError  # type: ignore
+from pysolr import Solr  # type: ignore
 
 import feed_sinai.sinai_types as st
-from feed_sinai.importer import Importer, MetadataRecord
 import logging
 
 
@@ -24,7 +22,7 @@ class SinaiJsonImporter:
     base_path: Path
     solr: Solr
 
-    def __init__(self, base_path: str = ".", solr_url: Optional[str] = None):
+    def __init__(self, base_path: str = '.', solr_url: Optional[str] = None):
         self.base_path = Path(base_path)
         self.solr = Solr(solr_url, always_commit=True)
 
@@ -35,21 +33,17 @@ class SinaiJsonImporter:
         Drops "ark:/21198/" (all records are assigned the UCLA NAAN) and adds the ".json" suffix"
         """
 
-        return ark.replace("ark:/21198/", "").replace("/", "-") + ".json"
+        return ark.replace('ark:/21198/', '').replace('/', '-') + '.json'
 
     def get_agent(self, ark: str):
-        path = self.base_path / "agents" / self.get_filename(ark)
+        path = self.base_path / 'agents' / self.get_filename(ark)
         return st.Agent.model_validate_json(path.read_text())
 
-    def get_assoc_name_item(
-        self, raw: st.AssocNameItemUnmerged
-    ) -> st.AssocNameItemMerged:
-        return raw.convert(
-            st.AssocNameItemMerged, agent=self.get_agent(raw.id) if raw.id else None
-        )
+    def get_assoc_name_item(self, raw: st.AssocNameItemUnmerged) -> st.AssocNameItemMerged:
+        return raw.convert(st.AssocNameItemMerged, agent=self.get_agent(raw.id) if raw.id else None)
 
     def get_conceptual_work(self, stub: st.WorkStub) -> st.ConceptualWorkMerged:
-        path = self.base_path / "works" / self.get_filename(stub.id)
+        path = self.base_path / 'works' / self.get_filename(stub.id)
         raw = st.ConceptualWorkUnmerged.model_validate_json(path.read_text())
 
         return raw.convert(
@@ -64,9 +58,7 @@ class SinaiJsonImporter:
     def get_work_brief(self, raw: st.WorkBriefUnmerged) -> st.WorkBriefMerged:
         return raw.convert(
             st.WorkBriefMerged,
-            creator=(
-                [self.get_agent(id) for id in raw.creator] if raw.creator else None
-            ),
+            creator=([self.get_agent(id) for id in raw.creator] if raw.creator else None),
         )
 
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
@@ -80,7 +72,7 @@ class SinaiJsonImporter:
         )
 
     def get_text_unit(self, stub: st.TextUnitStub) -> st.TextUnit:
-        path = self.base_path / "text_units" / self.get_filename(stub.id)
+        path = self.base_path / 'text_units' / self.get_filename(stub.id)
         raw = st.TextUnitUnmerged.model_validate_json(path.read_text())
 
         return raw.convert(
@@ -89,7 +81,7 @@ class SinaiJsonImporter:
         )
 
     def get_layer(self, layer: st.LayerStub) -> st.InscribedLayerMerged:
-        path = self.base_path / "layers" / self.get_filename(layer.id)
+        path = self.base_path / 'layers' / self.get_filename(layer.id)
         raw = st.InscribedLayerUnmerged.model_validate_json(path.read_text())
 
         return raw.convert(
@@ -115,16 +107,16 @@ class SinaiJsonImporter:
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
         """Yield json records for manuscripts with other data embedded."""
 
-        for path in (self.base_path / "ms_objs").glob("*.json"):
+        for path in (self.base_path / 'ms_objs').glob('*.json'):
             try:
                 yield self.get_merged_manuscript(path)
             except Exception as e:
-                logging.warning(f"Could not merge {path}: {e}")
+                logging.warning(f'Could not merge {path}: {e}')
 
     def save_merged_records(self) -> None:
         for record in self.iterate_merged_records():
-            (self.base_path / "merged").mkdir(exist_ok=True)
-            path = self.base_path / "merged" / self.get_filename(record.ark)
+            (self.base_path / 'merged').mkdir(exist_ok=True)
+            path = self.base_path / 'merged' / self.get_filename(record.ark)
             path.write_text(record.model_dump_json(exclude_none=True))
 
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
@@ -132,11 +124,11 @@ class SinaiJsonImporter:
             st.ManuscriptSolrRecord(
                 id=ms_obj.ark,
                 manuscript_json_ss=ms_obj.model_dump_json(exclude_none=True),
-                descriptive_title_tesim={*ms_obj.deep_get("desc_title")},
-                uniform_title_tesim={*ms_obj.deep_get("uniform_title")},
+                descriptive_title_tesim={*ms_obj.deep_get('desc_title')},
+                uniform_title_tesim={*ms_obj.deep_get('uniform_title')},
                 # date_created_tesim={""},  # TODO
                 human_readable_language_tesim={
-                    getattr(x, "label", x) for x in ms_obj.deep_get("lang")
+                    getattr(x, 'label', x) for x in ms_obj.deep_get('lang')
                 },
                 # name_fields_index_tesim=[*ms_obj.deep_get("")},  # TODO
                 # names_sim=[*ms_obj.deep_get("")},  # TODO
