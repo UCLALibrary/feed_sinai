@@ -61,14 +61,13 @@ sinai load --solr_url=http://localhost:8983/solr/californica [path/to/repo/sinai
 
 ### Installing
 
-For development, clone the repository and use poetry to set up the virtualenv:
+For development, clone the repository and use uv to set up the virtualenv:
 
 ```
 git clone git@github.com:UCLALibrary/feed_sinai.git
 cd feed_sinai
-pipx install poetry
-poetry self add poetry-git-version-plugin
-poetry install
+pipx install uv
+uv sync
 ```
 
 Then, to activate the virtualenv:
@@ -77,7 +76,7 @@ Then, to activate the virtualenv:
 source .venv/bin/activate
 ```
 
-The following will assume the virtualenv is active. You could also run e.g. `poetry run sinai [...]`
+The following will assume the virtualenv is active. You could also run e.g. `uv run -- sinai [...]`
 
 ### Using the development version
 
@@ -122,14 +121,7 @@ mypy
 
 ### VSCode Debugger Configuration
 
-To debug with VSCode, the python environment has to be created within the project directory.
-
-If it exists, remove the existing setup and install in the project directory:
-
-- `poetry env list`
-- `poetry env remove <name of environment you want to delete>`
-- `poetry config virtualenvs.in-project true`
-- `poetry install`
+To debug with VSCode, make sure the .venv folder was created within the project directory (I think this is the uv default).
 
 Add an appropriate `.vscode/launch.json`, this assumes you have the python debugger extension installed.
 

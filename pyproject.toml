@@ -1,36 +1,49 @@
-[tool.poetry]
+[project]
 name = "feed-sinai"
-version = "0.0.0"
+dynamic = ["version"]
 description = "Command line tool to load CSV content into a Solr index for https://sinaimanuscripts.library.ucla.edu/"
-authors = ["Andy Wallace <andrewwallace@library.ucla.edu>"]
+authors = [{ name = "Andy Wallace", email = "andrewwallace@library.ucla.edu" }]
+requires-python = ">=3.11,<4.0"
 readme = "README.md"
-packages = []
+dependencies = [
+    "click>=8.1.3,<9",
+    "rich>=13.4.1,<14",
+    "python-dateutil>=2.8.2,<3",
+    "pyyaml>=6.0.1,<7",
+    "setuptools>=74.0.0,<75",
+    "pydantic>=2.11.5",
+    "pysolr>=3.10.0",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.11,<4.0"
-click = "^8.1.3"
-rich = "^13.4.1"
-python-dateutil = "^2.8.2"
-pyyaml = "^6.0.1"
-setuptools = "^74.0.0"
-pydantic = ">=2.11.5"
-pysolr = ">=3.10.0"
+[project.scripts]
+sinai = "feed_sinai.feed_sinai:sinai"
 
-[tool.poetry.group.dev.dependencies]
-mypy = "*"
-ipdb = "^0.13.13"
-black = {version = "^24.10.0", python = "^3.9"}
-flake8 = {version = "^7.1.1", python = "^3.9"}
-pylint = {version = "^3.3.1", python = "^3.9"}
-ipython = ">=9.3.0"
+[dependency-groups]
+dev = [
+    "mypy",
+    "ipdb>=0.13.13,<0.14",
+    "black>=24.10.0,<25 ; python_version ~= '3.9'",
+    "flake8>=7.1.1,<8 ; python_version ~= '3.9'",
+    "pylint>=3.3.1,<4 ; python_version ~= '3.9'",
+    "ipython>=9.3.0",
+]
+test = [
+    "pytest>=8.3.3",
+    "pytest-sugar>=1.0.0",
+]
 
-[tool.poetry.group.test.dependencies]
-pytest = ">=8.3.3"
-pytest-sugar = ">=1.0.0"
-
-[tool.poetry.scripts]
-sinai = 'feed_sinai.feed_sinai:sinai'
+[tool.uv]
+default-groups = [
+    "dev",
+    "test",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
