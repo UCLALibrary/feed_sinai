@@ -79,6 +79,14 @@ class TestGetWork:
         assert n_files == 129
 
 
+def test_get_work_brief():
+    raw = st.WorkBriefUnmerged(desc_title="Abc123", creator=["ark:/21198/s1b59x"])
+    result = IMPORTER.get_work_brief(raw)
+    assert isinstance(result, st.WorkBriefMerged)
+    assert isinstance(result.creator[0], st.Agent)
+    assert result.creator[0].pref_name == "Onuphrius"
+
+
 class TestGetWorkWit:
     def test_get_work_wit_with_stub(self):
         raw = st.WorkWitItemUnmerged(
@@ -89,10 +97,16 @@ class TestGetWorkWit:
         assert result.work.pref_title == "2 John"
 
     def test_get_work_wit_with_workbrief(self):
-        raw = st.WorkWitItemUnmerged(work=st.WorkBrief(desc_title="Test Work"))
+        raw = st.WorkWitItemUnmerged(
+            work=st.WorkBriefUnmerged(
+                desc_title="Test Work", creator=["ark:/21198/s1b59x"]
+            )
+        )
         result = IMPORTER.get_work_wit(raw)
         assert isinstance(result, st.WorkWitItemMerged)
-        assert result.model_dump() == raw.model_dump()
+        assert isinstance(result.work, st.WorkBriefMerged)
+        assert isinstance(result.work.creator[0], st.Agent)
+        assert result.work.creator[0].pref_name == "Onuphrius"
 
 
 class TestGetTextUnit:

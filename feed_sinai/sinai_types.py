@@ -22,8 +22,8 @@ from pydantic import (
 SiblingModel = TypeVar("SiblingModel", bound=PydanticBaseModel)
 
 
-class BaseModel(PydanticBaseModel, frozen=True):
-    model_config = ConfigDict(extra="forbid")
+class BaseModel(PydanticBaseModel):
+    model_config = ConfigDict(extra="forbid", frozen=True)
 
     def convert(self, cls: type[SiblingModel], **updated_data) -> SiblingModel:
         data = (
@@ -284,8 +284,16 @@ class WorkStub(BaseModel):
 # TODO: what's up here?
 class WorkBrief(BaseModel):
     desc_title: Optional[NonEmptyStr] = None
-    creator: Optional[List[Ark]] = Field(None, min_length=1)
+    creator: Optional[List[Ark] | List[Agent]] = Field(None, min_length=1)
     genre: Optional[List[ControlledTerm]] = Field(None, min_length=1)
+
+
+class WorkBriefUnmerged(WorkBrief):
+    creator: Optional[List[Ark]] = Field(None, min_length=1)
+
+
+class WorkBriefMerged(WorkBrief):
+    creator: Optional[List[Agent]] = Field(None, min_length=1)
 
 
 class ExcerptItem(BaseModel):
@@ -324,11 +332,11 @@ class WorkWitItem(BaseModel):
 
 
 class WorkWitItemUnmerged(WorkWitItem):
-    work: WorkBrief | WorkStub
+    work: WorkBriefUnmerged | WorkStub
 
 
 class WorkWitItemMerged(WorkWitItem):
-    work: WorkBrief | ConceptualWorkMerged
+    work: WorkBriefMerged | ConceptualWorkMerged
 
 
 class ScriptItem(BaseModel):

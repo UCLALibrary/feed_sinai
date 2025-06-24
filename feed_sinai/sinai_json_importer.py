@@ -61,11 +61,19 @@ class SinaiJsonImporter:
             ),
         )
 
+    def get_work_brief(self, raw: st.WorkBriefUnmerged) -> st.WorkBriefMerged:
+        return raw.convert(
+            st.WorkBriefMerged,
+            creator=(
+                [self.get_agent(id) for id in raw.creator] if raw.creator else None
+            ),
+        )
+
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
         return raw.convert(
             st.WorkWitItemMerged,
             work=(
-                raw.work
+                self.get_work_brief(raw.work)
                 if isinstance(raw.work, st.WorkBrief)
                 else self.get_conceptual_work(raw.work)
             ),
