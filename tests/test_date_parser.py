@@ -8,25 +8,25 @@ import datetime
 from feed_sinai import date_parser
 
 
-def test_iso_8601():
+def test_iso_8601() -> None:
     """Parses an iso 8601 standard string"""
     test_date = datetime.datetime(1941, 10, 1)
     assert date_parser.get_dates(['1941-10-01']) == [test_date]
 
 
-def test_just_year():
+def test_just_year() -> None:
     """Parses a bare year."""
     test_date = datetime.datetime(1953, 1, 1)
     assert date_parser.get_dates(['1953']) == [test_date]
 
 
-def test_year_and_month():
+def test_year_and_month() -> None:
     """Parses YYYY-MM"""
     test_date = datetime.datetime(1953, 10, 1)
     assert date_parser.get_dates(['1953-10']) == [test_date]
 
 
-def test_multiple_dates():
+def test_multiple_dates() -> None:
     """Parses multiple input values into a list of outputs."""
     test_dates = [
         datetime.datetime(1941, 10, 1),
@@ -36,18 +36,18 @@ def test_multiple_dates():
     assert date_parser.get_dates(['1941-10-01', '1935', '1945']) == sorted(test_dates)
 
 
-def test_empty():
+def test_empty() -> None:
     """Returns an empty list if given an empty input."""
     assert date_parser.get_dates([]) == []
 
 
-def test_unparseable():
+def test_unparseable() -> None:
     """Doesn't return anything for unparseable values, but still parses other elements in input."""
     test_date = datetime.datetime(1953, 1, 1)
     assert date_parser.get_dates(['1953', '[between 1928-1939]']) == [test_date]
 
 
-def test_range():
+def test_range() -> None:
     """Parses YYYY/YYYY into dates."""
 
     assert date_parser.get_dates(['1937/1939', '1942/1943']) == [
@@ -65,7 +65,7 @@ def test_range():
     ]
 
 
-def test_range_with_months():
+def test_range_with_months() -> None:
     """Months can be included in range elements, but are ingored."""
 
     assert date_parser.get_dates(['1934-06/1934-07']) == [
@@ -74,7 +74,7 @@ def test_range_with_months():
     ]
 
 
-def test_duplicates():
+def test_duplicates() -> None:
     """Deduplicates elements in output."""
 
     assert date_parser.get_dates(['1934-06/1935-07', '1934-06-01', '1934']) == [

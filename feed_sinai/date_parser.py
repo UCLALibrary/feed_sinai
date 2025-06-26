@@ -11,7 +11,7 @@ from dateutil import parser
 NORMALIZED_RANGE = re.compile(r'(.*)/(.*)')
 
 
-def get_dates(normalized_dates: typing.Any):
+def get_dates(normalized_dates: typing.Any) -> list[datetime]:
     """Maps a list of 'normalized_date' strings to a sorted list of datetime.
 
     Args:
@@ -41,7 +41,7 @@ def get_dates(normalized_dates: typing.Any):
     return sorted(solr_dts)
 
 
-def get_date(date: str):
+def get_date(date: str) -> datetime | None:
     """Extracts the single 4-digit year found in the input date string.
 
     Args:

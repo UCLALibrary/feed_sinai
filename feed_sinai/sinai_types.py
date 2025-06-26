@@ -4,7 +4,7 @@
 
 from datetime import datetime
 from enum import Enum
-from typing import List, Optional, Annotated, Self, Set, TypeVar
+from typing import Any, List, Optional, Annotated, Self, Set, TypeVar
 from uuid import UUID
 
 from pydantic import (
@@ -23,7 +23,8 @@ SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
 class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
 
-    def convert(self, cls: type[SiblingModel], **updated_data) -> SiblingModel:
+    # type: ignore
+    def convert(self, cls: type[SiblingModel], **updated_data: Any) -> SiblingModel:
         data = (
             self.model_dump(exclude_unset=True, exclude_none=True, exclude_defaults=True)
             | updated_data
@@ -231,9 +232,6 @@ class AssocNameItemMerged(AssocNameItem):
 
 class AssocNameItemUnmerged(AssocNameItem):
     agent: None = None
-
-    def merge(self, base_dir):
-        return self.convert(AssocNameItemMerged, agent=Agent.load(self.id))
 
 
 class ConceptualWork(BaseModel):

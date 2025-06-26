@@ -14,11 +14,11 @@ BASE_PATH = 'tests/sinaiportal_json_export'
 IMPORTER = SinaiJsonImporter(base_path=BASE_PATH)
 
 
-def test_get_filename():
+def test_get_filename() -> None:
     assert IMPORTER.get_filename('ark:/21198/z1h13zxq') == 'z1h13zxq.json'
 
 
-def test_get_agent():
+def test_get_agent() -> None:
     result = IMPORTER.get_agent('ark:/21198/s1b59x')
     assert isinstance(result, st.Agent)
     assert result.model_dump(exclude_none=True) == {
@@ -56,21 +56,21 @@ def test_get_agent():
     }
 
 
-def test_get_assoc_name_item():
-    unmerged = test_sinai_types.TestAssocNameItem.EPHREM
+def test_get_assoc_name_item() -> None:
+    unmerged = test_sinai_types.TestAssocNameItem.EPHREM.convert(st.AssocNameItemUnmerged)
     result = IMPORTER.get_assoc_name_item(unmerged)
     assert isinstance(result, st.AssocNameItemMerged)
-    assert result.agent.alt_name == ['Ephrem the Syrian', 'ܐܦܪܝܡ']
+    assert result.agent and result.agent.alt_name == ['Ephrem the Syrian', 'ܐܦܪܝܡ']
 
 
 class TestGetWork:
-    def test_good_get_work(self):
+    def test_good_get_work(self) -> None:
         stub = st.WorkStub(id='ark:/21198/s1b015')
         result = IMPORTER.get_conceptual_work(stub)
         assert isinstance(result, st.ConceptualWorkMerged)
         assert result.pref_title == '2 John'
 
-    def test_loads_all_works(self):
+    def test_loads_all_works(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'works').glob('*.json'):
             stub = st.WorkStub(id='ark:/21198/' + path.stem)
@@ -79,38 +79,37 @@ class TestGetWork:
         assert n_files == 129
 
 
-def test_get_work_brief():
+def test_get_work_brief() -> None:
     raw = st.WorkBriefUnmerged(desc_title='Abc123', creator=['ark:/21198/s1b59x'])
     result = IMPORTER.get_work_brief(raw)
     assert isinstance(result, st.WorkBriefMerged)
-    assert isinstance(result.creator[0], st.Agent)
+    assert result.creator and isinstance(result.creator[0], st.Agent)
     assert result.creator[0].pref_name == 'Onuphrius'
 
 
 class TestGetWorkWit:
-    def test_get_work_wit_with_stub(self):
+    def test_get_work_wit_with_stub(self) -> None:
         raw = st.WorkWitItemUnmerged(
             work=st.WorkStub(id='ark:/21198/s1b015'),
         )
         result = IMPORTER.get_work_wit(raw)
         assert isinstance(result, st.WorkWitItemMerged)
+        assert isinstance(result.work, st.ConceptualWorkMerged)
         assert result.work.pref_title == '2 John'
 
-    def test_get_work_wit_with_workbrief(self):
+    def test_get_work_wit_with_workbrief(self) -> None:
         raw = st.WorkWitItemUnmerged(
-            work=st.WorkBriefUnmerged(
-                desc_title='Test Work', creator=['ark:/21198/s1b59x']
-            )
+            work=st.WorkBriefUnmerged(desc_title='Test Work', creator=['ark:/21198/s1b59x'])
         )
         result = IMPORTER.get_work_wit(raw)
         assert isinstance(result, st.WorkWitItemMerged)
         assert isinstance(result.work, st.WorkBriefMerged)
-        assert isinstance(result.work.creator[0], st.Agent)
+        assert result.work.creator and isinstance(result.work.creator[0], st.Agent)
         assert result.work.creator[0].pref_name == 'Onuphrius'
 
 
 class TestGetTextUnit:
-    def test_good_text_unit(self):
+    def test_good_text_unit(self) -> None:
         stub = st.TextUnitStub.model_validate_json(
             """
             {
@@ -141,7 +140,7 @@ class TestGetTextUnit:
             ],
         }
 
-    def test_loads_all_text_units(self):
+    def test_loads_all_text_units(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'text_units').glob('*.json'):
             stub = st.TextUnitStub(id='ark:/21198/' + path.stem, label='whatevs')
@@ -151,7 +150,7 @@ class TestGetTextUnit:
 
 
 class TestGetLayer:
-    def test_good_layer(self):
+    def test_good_layer(self) -> None:
         stub = st.LayerStub.model_validate_json(
             """
             {
@@ -245,9 +244,7 @@ class TestGetLayer:
                                 'rel_con': [
                                     {
                                         'label': 'Bible. Mark',
-                                        'uri': st.AnyUrl(
-                                            'https://viaf.org/viaf/179823714'
-                                        ),
+                                        'uri': st.AnyUrl('https://viaf.org/viaf/179823714'),
                                         'source': st.RelatedConceptSource.VIAF,
                                     },
                                     {
@@ -278,9 +275,7 @@ class TestGetLayer:
                                 'rel_con': [
                                     {
                                         'label': 'Bible. Luke',
-                                        'uri': st.AnyUrl(
-                                            'http://viaf.org/viaf/257061095'
-                                        ),
+                                        'uri': st.AnyUrl('http://viaf.org/viaf/257061095'),
                                         'source': st.RelatedConceptSource.VIAF,
                                     }
                                 ],
@@ -379,7 +374,7 @@ class TestGetLayer:
             'internal': ['Test record for development purposes; please delete.'],
         }
 
-    def test_loads_all_layers(self):
+    def test_loads_all_layers(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'layers').glob('*.json'):
             stub = st.LayerStub(
@@ -393,18 +388,16 @@ class TestGetLayer:
 
 
 class TestGetMergedManuscript:
-    def test_good_manuscript(self):
+    def test_good_manuscript(self) -> None:
         with open(f'{BASE_PATH}/outputs/z1h13zxq.json', encoding='utf-8') as f:
             expected = json.load(f)
 
-        result = IMPORTER.get_merged_manuscript(
-            IMPORTER.base_path / 'ms_objs/z1h13zxq.json'
-        )
+        result = IMPORTER.get_merged_manuscript(IMPORTER.base_path / 'ms_objs/z1h13zxq.json')
 
         assert json.loads(result.model_dump_json(exclude_none=True)) == expected
 
     @pytest.mark.xfail  # Don't seem to have good data here yet
-    def test_loads_all_manuscripts(self):
+    def test_loads_all_manuscripts(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'ms_objs').glob('*.json'):
             IMPORTER.get_merged_manuscript(path)

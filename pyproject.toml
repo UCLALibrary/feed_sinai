@@ -26,6 +26,7 @@ dev = [
     "flake8>=7.1.1,<8 ; python_version ~= '3.9'",
     "pylint>=3.3.1,<4 ; python_version ~= '3.9'",
     "ipython>=9.3.0",
+    "types-python-dateutil>=2.9.0.20250516",
 ]
 test = [
     "pytest>=8.3.3",
@@ -40,6 +41,10 @@ default-groups = [
 
 [tool.ruff.format]
 quote-style = "single"
+
+[tool.mypy]
+plugins = ['pydantic.mypy']
+disallow_untyped_defs = true
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]

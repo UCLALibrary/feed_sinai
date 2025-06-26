@@ -14,12 +14,12 @@ class ExampleModel(st.BaseModel):
 
 
 class TestBaseModel:
-    def test_convert(self):
+    def test_convert(self) -> None:
         first = ExampleModel(a=1, b=2)
         second = first.convert(ExampleModel, b=3)
         assert second == ExampleModel(a=1, b=3)
 
-    def test_deep_get(self):
+    def test_deep_get(self) -> None:
         test_obj = ExampleModel.model_validate(
             {
                 'a': 1,
@@ -39,50 +39,50 @@ class TestControlledTerm:
     CONTROLLED_TERM = st.ControlledTerm(id='abc', label='123')
     MAN = st.ControlledTerm(id='man', label='Man')
 
-    def test_happy_path(self):
+    def test_happy_path(self) -> None:
         result = st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}')
         assert result == self.CONTROLLED_TERM
 
-    def test_extra_field(self):
+    def test_extra_field(self) -> None:
         with pytest.raises(ValidationError):
             st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}, "other": "xyz"')
 
-    def test_missing_id(self):
+    def test_missing_id(self) -> None:
         with pytest.raises(ValidationError):
             st.ControlledTerm.model_validate_json('{"label": "123"}')
 
-    def test_missing_value(self):
+    def test_missing_value(self) -> None:
         with pytest.raises(ValidationError):
             st.ControlledTerm.model_validate_json('{"id": "abc"}')
 
-    def test_empty_id(self):
+    def test_empty_id(self) -> None:
         with pytest.raises(ValidationError):
             st.ControlledTerm.model_validate_json('{"id": ", "label": "123"}')
 
-    def test_empty_value(self):
+    def test_empty_value(self) -> None:
         with pytest.raises(ValidationError):
             st.ControlledTerm.model_validate_json('{"id": "abc", "label": "}')
 
 
 # class TestGender:
-#     def test_man(self):
+#     def test_man(self) -> None:
 #         result = st.Gender({"id": "man", "label": "Man"})
 #         assert result == st.Gender.man
 
-#     def test_woman(self):
+#     def test_woman(self) -> None:
 #         result = st.Gender({"id": "woman", "label": "Woman"})
 #         assert result == st.Gender.woman
 
-#     def test_other(self):
+#     def test_other(self) -> None:
 #         result = st.Gender({"id": "other", "label": "Other"})
 #         assert result == st.Gender.other
 
-#     def test_invalid_gender(self):
+#     def test_invalid_gender(self) -> None:
 #         """With appologies, we are only tracking 'man', 'woman', and 'other"""
 #         with pytest.raises(ValueError):
 #             st.Gender({"id": "something", "label": "else"})
 
-#     def test_as_value(self):
+#     def test_as_value(self) -> None:
 #         class TestModel(BaseModel):
 #             gender: st.Gender
 #         result = TestModel.model_validate_json('{"id": "other", "label": "Other"}')
@@ -92,15 +92,15 @@ class TestControlledTerm:
 class TestIso:
     ISO = st.Iso(not_before='0010', not_after='0100')
 
-    def test_good_iso(self):
+    def test_good_iso(self) -> None:
         assert st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}') == self.ISO
 
-    def test_no_notafter(self):
+    def test_no_notafter(self) -> None:
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
         assert result.not_before == '0010'
         assert result.not_after is None
 
-    def test_no_notbefore(self):
+    def test_no_notbefore(self) -> None:
         with pytest.raises(ValidationError):
             st.Iso.model_validate_json('{"not_after": "0010"}')
 
@@ -108,7 +108,7 @@ class TestIso:
 class TestDate:
     DATE = st.Date(value='4th c. CE', iso=TestIso.ISO)
 
-    def test_good_date(self):
+    def test_good_date(self) -> None:
         st.Date.model_validate_json(
             """
             {
@@ -123,7 +123,7 @@ class TestDate:
 
 
 class TestRelConItem:
-    def test_good_json(self):
+    def test_good_json(self) -> None:
         result = st.RelConItem.model_validate_json(
             """
             {
@@ -136,7 +136,7 @@ class TestRelConItem:
         assert result.label == 'Onuphrius, Saint, -approximately 400'
         assert result.source == st.RelatedConceptSource.HAF
 
-    def test_invalid_source(self):
+    def test_invalid_source(self) -> None:
         with pytest.raises(ValidationError):
             st.RelConItem.model_validate_json(
                 """
@@ -150,7 +150,7 @@ class TestRelConItem:
 
 
 class TestRefnoItem:
-    def test_good_json(self):
+    def test_good_json(self) -> None:
         result = st.RefnoItem.model_validate_json(
             """
             {
@@ -164,7 +164,7 @@ class TestRefnoItem:
 
 
 class TestBibItem:
-    def test_good_json(self):
+    def test_good_json(self) -> None:
         result = st.BibItem.model_validate_json(
             """
             {
@@ -292,7 +292,7 @@ class TestAgent:
         ],
     )
 
-    def test_good_json(self):
+    def test_good_json(self) -> None:
         assert (
             st.Agent.model_validate_json(
                 """
@@ -339,7 +339,7 @@ class TestAgent:
             == self.THEODORE
         )
 
-    def test_bad_ark(self):
+    def test_bad_ark(self) -> None:
         with pytest.raises(ValidationError, match='String should match pattern'):
             st.Agent.model_validate_json(
                 """
@@ -353,7 +353,7 @@ class TestAgent:
 
 
 class TestWritingItem:
-    def test_good_writing_item(self):
+    def test_good_writing_item(self) -> None:
         st.WritingItem.model_validate_json(
             """
             {
@@ -373,7 +373,7 @@ class TestWritingItem:
 
 
 class TestInkItem:
-    def test_good_ink_item(self):
+    def test_good_ink_item(self) -> None:
         st.InkItem.model_validate_json(
             """
             { 
@@ -390,7 +390,7 @@ class TestInkItem:
 
 
 class TestLayoutItem:
-    def test_good_layout_item(self):
+    def test_good_layout_item(self) -> None:
         st.LayoutItem.model_validate_json(
             """
             {
@@ -408,7 +408,7 @@ class TestLayoutItem:
 
 
 class TestUnitItem:
-    def test_good_text_unit_item(self):
+    def test_good_text_unit_item(self) -> None:
         st.TextUnitStub.model_validate_json(
             """
             {
@@ -427,7 +427,7 @@ class TestAssocNameItem:
         note=['The ARK is for Ephrem, to demo functionality'],
     )
 
-    def test_good_TestAssocNameItem(self):
+    def test_good_TestAssocNameItem(self) -> None:
         assert (
             st.AssocNameItem.model_validate_json(
                 """
@@ -447,13 +447,13 @@ class TestAssocNameItem:
             == self.EPHREM
         )
 
-    def test_good_TestAssocNameItemMerged(self):
+    def test_good_TestAssocNameItemMerged(self) -> None:
         result = self.EPHREM.convert(st.AssocNameItemMerged, agent=TestAgent.EPHREM)
         assert result.agent == TestAgent.EPHREM
 
 
 class TestAssocPlaceItem:
-    def test_good_assoc_place_item(self):
+    def test_good_assoc_place_item(self) -> None:
         st.AssocPlaceItem.model_validate_json(
             """
             {
@@ -468,7 +468,7 @@ class TestAssocPlaceItem:
 
 
 class TestAssocDateItem:
-    def test_good_assoc_date_item(self):
+    def test_good_assoc_date_item(self) -> None:
         st.AssocDateItem.model_validate_json(
             """
             { 
@@ -490,7 +490,7 @@ class TestAssocDateItem:
 
 
 class TestParaItem:
-    def test_good_para_item(self):
+    def test_good_para_item(self) -> None:
         st.ParaItem.model_validate_json(
             """
             {
@@ -512,7 +512,7 @@ class TestParaItem:
 
 
 class TestRelatedMs:
-    def test_good_related_ms(self):
+    def test_good_related_ms(self) -> None:
         st.RelatedMs.model_validate_json(
             """
             { 
@@ -535,7 +535,7 @@ class TestRelatedMs:
         """
         )
 
-    def test_no_ms_id(self):
+    def test_no_ms_id(self) -> None:
         st.RelatedMs.model_validate_json(
             """
             { 
@@ -564,7 +564,7 @@ class TestRelatedMs:
 
 
 class TestNoteItem:
-    def test_good_note_item(self):
+    def test_good_note_item(self) -> None:
         """ "Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/layers/s18d1p.json"""
 
         st.NoteItem.model_validate_json(
@@ -581,7 +581,7 @@ class TestNoteItem:
 
 
 class TestInscribedLayer:
-    def test_good_inscribed_layer(self):
+    def test_good_inscribed_layer(self) -> None:
         """ "Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/layers/s18d1p.json"""
 
         st.InscribedLayer.model_validate_json(
@@ -658,7 +658,7 @@ class TestInscribedLayer:
 
 
 class TestLayerStub:
-    def test_good_LayerStub(self):
+    def test_good_LayerStub(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         st.LayerStub.model_validate_json(
@@ -677,7 +677,7 @@ class TestLayerStub:
 
 
 class TestPart:
-    def test_good_Part(self):
+    def test_good_Part(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         st.Part.model_validate_json(
@@ -745,7 +745,7 @@ class TestPart:
 
 
 class TestLocationItem:
-    def test_good_LocationItem(self):
+    def test_good_LocationItem(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         st.LocationItem.model_validate_json(
@@ -760,7 +760,7 @@ class TestLocationItem:
 
 
 class TestViscodexItem:
-    def test_good_ViscodexItem(self):
+    def test_good_ViscodexItem(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         st.ViscodexItem.model_validate_json(
@@ -778,7 +778,7 @@ class TestViscodexItem:
 
 
 class TestIiifItem:
-    def test_good_IiifItem(self):
+    def test_good_IiifItem(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         st.IiifItem.model_validate_json(
@@ -798,7 +798,7 @@ class TestIiifItem:
 
 
 class TestManuscriptObject:
-    def test_good_ManuscriptObject(self):
+    def test_good_ManuscriptObject(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
         result = st.ManuscriptObject.model_validate_json(
@@ -1463,11 +1463,11 @@ class TestManuscriptObject:
             }
         """
         )
-        assert result.image_provenance.program[0].camera_operator[0] == 'Damianos Kasotakis'
+        assert result.image_provenance.program[0].camera_operator[0] == 'Damianos Kasotakis'  # type: ignore
 
 
 class TestWorkStub:
-    def test_good_WorkStub(self):
+    def test_good_WorkStub(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/d58a6555cf08448fa0b0b95e0ff91717992d67f2/text_units/s1cd6h.json"""
         st.WorkStub.model_validate_json(
             """
@@ -1479,7 +1479,7 @@ class TestWorkStub:
 
 
 class TestWorkBrief:
-    def test_good_WorkBrief(self):
+    def test_good_WorkBrief(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/text_units/s1mh4z.json"""
         st.WorkBrief.model_validate_json(
             """
@@ -1491,7 +1491,7 @@ class TestWorkBrief:
 
 
 class TestExcerptItem:
-    def test_good_ExcerptItem(self):
+    def test_good_ExcerptItem(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/46584bb30e5f351e73010a4914a71a52e3ea389d/text_units/s1b35q.json"""
         st.ExcerptItem.model_validate_json(
             """
@@ -1508,7 +1508,7 @@ class TestExcerptItem:
 
 
 class TestContents:
-    def test_good_Contents(self):
+    def test_good_Contents(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/46584bb30e5f351e73010a4914a71a52e3ea389d/text_units/s1c37s.json"""
         st.Contents.model_validate_json(
             """
@@ -1520,7 +1520,7 @@ class TestContents:
 
 
 class TestWorkWitItem:
-    def test_good_WorkWitItem_with_WorkStub(self):
+    def test_good_WorkWitItem_with_WorkStub(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/d58a6555cf08448fa0b0b95e0ff91717992d67f2/text_units/s1cd6h.json"""
         result = st.WorkWitItem.model_validate_json(
             """
@@ -1533,7 +1533,7 @@ class TestWorkWitItem:
         )
         assert isinstance(result.work, st.WorkStub)
 
-    def test_good_WorkWitItem_with_WorkBrief(self):
+    def test_good_WorkWitItem_with_WorkBrief(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/d58a6555cf08448fa0b0b95e0ff91717992d67f2/text_units/s1cd6h.json"""
         result = st.WorkWitItem.model_validate_json(
             """
@@ -1546,7 +1546,7 @@ class TestWorkWitItem:
         )
         assert isinstance(result.work, st.WorkBrief)
 
-    def test_bad_mixed_work_type(self):
+    def test_bad_mixed_work_type(self) -> None:
         with pytest.raises(ValidationError, match='Extra inputs are not permitted'):
             st.WorkWitItem.model_validate_json(
                 """
@@ -1561,7 +1561,7 @@ class TestWorkWitItem:
 
 
 class TestTextUnit:
-    def test_good_TextUnit(self):
+    def test_good_TextUnit(self) -> None:
         """example from https://github.com/UCLALibrary/sinaiportal_data/blob/d58a6555cf08448fa0b0b95e0ff91717992d67f2/text_units/s1cd6h.json"""
         st.TextUnit.model_validate_json(
             """
@@ -1607,7 +1607,7 @@ class TestTextUnit:
 
 
 class TestCreation:
-    def test_good_Creation(self):
+    def test_good_Creation(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/32278a93089ee067da48dac6adee5bb1ef888986/export_test/works/s1cc8x.json"""
         st.Creation.model_validate_json(
             """
@@ -1623,7 +1623,7 @@ class TestCreation:
 
 # # TODO not attested
 # class TestIncipit:
-#     def test_good_Incipit(self):
+#     def test_good_Incipit(self) -> None:
 #         st.Incipit.model_validate_json("""
 
 #         """)
@@ -1631,7 +1631,7 @@ class TestCreation:
 
 # # TODO not attested
 # class TestExplicit:
-#     def test_good_Explicit(self):
+#     def test_good_Explicit(self) -> None:
 #         st.Explicit.model_validate_json("""
 
 #         """)
@@ -1639,14 +1639,14 @@ class TestCreation:
 
 # # TODO not attested
 # class TestRelWorkItem:
-#     def test_good_RelWorkItem(self):
+#     def test_good_RelWorkItem(self) -> None:
 #         st.RelWorkItem.model_validate_json("""
 
 #         """)
 
 
 class TestConceptualWorkUnmerged:
-    def test_good_ConceptualWorkUnmerged(self):
+    def test_good_ConceptualWorkUnmerged(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/32278a93089ee067da48dac6adee5bb1ef888986/export_test/works/s1cs35.json"""
         st.ConceptualWork.model_validate_json(
             """

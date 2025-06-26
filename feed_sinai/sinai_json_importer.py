@@ -27,7 +27,7 @@ class SinaiJsonImporter:
         self.solr = Solr(solr_url, always_commit=True)
 
     @staticmethod
-    def get_filename(ark: str):
+    def get_filename(ark: str) -> str:
         """Returns a filename based on an item's ark.
 
         Drops "ark:/21198/" (all records are assigned the UCLA NAAN) and adds the ".json" suffix"
@@ -35,7 +35,7 @@ class SinaiJsonImporter:
 
         return ark.replace('ark:/21198/', '').replace('/', '-') + '.json'
 
-    def get_agent(self, ark: str):
+    def get_agent(self, ark: str) -> st.Agent:
         path = self.base_path / 'agents' / self.get_filename(ark)
         return st.Agent.model_validate_json(path.read_text())
 
@@ -135,5 +135,5 @@ class SinaiJsonImporter:
             ).model_dump_json(exclude_none=True)
         )
 
-    def load_to_solr(self):
+    def load_to_solr(self) -> None:
         self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
