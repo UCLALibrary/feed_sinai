@@ -196,6 +196,8 @@ class TestBibItem:
                     "id": "ref",
                     "label": "Reference"
                 },
+                "shortcode": "test shortcode",
+                "citation": "test citation",
                 "range": "[141], p. 156"
             }
         """

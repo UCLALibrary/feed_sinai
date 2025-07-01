@@ -13,7 +13,7 @@
     "work_wit": [
         {
             "work": {
-                "id": "ark:/21198/s1h30c"
+                "id": "ark:/21198/s1gc7g"
             },
             "alt_title": "Synaxarion for the whole year according to the rite of the Greeks",
             "as_written": "ܣܘܢܟܣܪܝܢ ܕܫܢܬܐ ܟܠܗ̇ ܐܝܟ ܛܟܣܐ ܕܝܘ̈ܢܝܐ",
@@ -78,6 +78,8 @@
             "bib": [
                 {
                     "id": "01d4a639-d314-4271-b7f8-3f559c6c744c",
+                    "shortcode": "Kashouh 2012",
+                    "citation": "Kashouh, Hikmat. The Arabic Versions of the Gospels: The Manuscripts and their Families. Berlin: De Gruyter, 2012",
                     "type": {
                         "id": "edition",
                         "label": "Edition"
@@ -175,30 +177,25 @@
     "bib": [
         {
             "id": "3a20a9e1-0b02-476c-966e-649b62ac5761",
+            "shortcode": "Binggeli",
+            "citation": "Binggeli, André. \"Les trois David copistes arabes de Palestine aux 9e-10e s.” In Manuscripta graeca et orientalia: Mélanges monastiques et patristiques en l’honneur de Paul Géhin. Edited by André Binggeli, Anne Boud'hors, and Matthieu Cassin, 79-118. Leuven: Peeters, 2016.",
             "type": {
                 "id": "cite",
                 "label": "Citation"
             },
-            "range": "pp. 43-687",
-            "note": [
-                "Binggeli"
-            ]
+            "range": "pp. 43-687"
         },
         {
             "id": "afba79a3-c57f-44cf-9005-ed6e2f3d76b8",
+            "shortcode": "Müller-Kessler 2017",
+            "citation": "C. Müller-Kessler. “The Martyrdom of Arianos and the Four Protectores in an Unpublished Christian Palestinian Aramaic Palimpsest, St Catherine’s Monastery (Sinai, Arabic NF 66).” Collectanea Christiana Orientalia 14 (2017): 115-125. https://doi.org/10.21071/cco.v14i.14448",
             "type": {
                 "id": "edition",
                 "label": "Edition"
-            },
-            "note": [
-                "Müller-Kessler 2017"
-            ]
+            }
         }
     ],
     "parent": [
         "ark:/21198/te5fp1ol"
-    ],
-    "internal": [
-        "Test record, delete after development is complete"
-        ]
+    ]
 }

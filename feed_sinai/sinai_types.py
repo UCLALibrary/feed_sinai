@@ -151,6 +151,8 @@ class RefnoItem(BaseModel):
 class BibItem(BaseModel):
     id: UUID
     type: ControlledTerm
+    shortcode: Optional[str] = None  # TODO: required in JSON schema but not found in all data
+    citation: Optional[str] = None  # TODO: required in JSON schema but not found in all data
     range: Optional[NonEmptyStr] = None
     alt_shelf: Optional[NonEmptyStr] = None
     url: Optional[NonEmptyStr] = None

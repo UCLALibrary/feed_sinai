@@ -346,7 +346,7 @@
             ], 
             "assoc_place": [
                 { 
-                    "id": "Nisibis", 
+                    "id": "ark:/21198/pl1234", 
                     "as_written": "ܢܨܝܒܝܢ", 
                     "event": { 
                         "id": "unknown", 
@@ -357,7 +357,7 @@
                     ] 
                 }, 
                 { 
-                    "id": "Amid", 
+                    "id": "ark:/21198/pl5678", 
                     "as_written": "ܐܡܕ", 
                     "event": { 
                         "id": "birth", 
@@ -390,7 +390,6 @@
             ] 
         } 
     ], 
-    "has_bind": true, 
     "location": [
         { 
             "id": "sinai-oc", 
@@ -536,6 +535,8 @@
     "bib": [
         { 
             "id": "deb668b6-feec-4828-8749-a97441881226", 
+            "shortcode": "Kamil",
+            "citation": "Kāmil, Murād. Catalogue of All Manuscripts in the Monastery of St. Catherine on Mount Sinai. Harrassowitz, 1970.",
             "type": { 
                 "id": "ref", 
                 "label": "Reference Work" 
@@ -548,6 +549,8 @@
         }, 
         {
             "id": "ce9cdae8-81ce-4c29-8431-ab599cd5491c",
+            "shortcode": "Gvaramia, et al. 1987",
+            "citation": "R. Gvaramia, E. Met'reveli, C. Č'ank'ievi, L. Xevsuriani, and L. Džġamaia. Kartul xelnacerta aġc'eriloba: Sinuri k'olekcia [Description of Georgian manuscripts: Sinai collection III]. Tbilisi, 1987",
             "type": {
                 "id": "ref",
                 "label": "Reference Work"
@@ -559,6 +562,8 @@
         },
         { 
             "id": "ec7c937f-655a-4459-b327-3793637b9db9", 
+            "shortcode": "LOC",
+            "citation": "Manuscripts in St. Catherine's Monastery, Mount Sinai. Library of Congress.",
             "type": { 
                 "id": "otherdigversion", 
                 "label": "Other Digital Version" 
@@ -570,6 +575,8 @@
         } ,
         {
             "id": "467167dd-e012-4f87-a1c8-cd8a79c3e8d5",
+            "shortcode": "Géhin 2006",
+            "citation": "Géhin, Paul. “Manuscrits sinaïtiques dispersés, I:  les fragments arabes et syriaques de Paris.” OC 90 (2006): 23-43",
             "type": {
                 "id": "cite",
                 "label": "Citation"
@@ -578,21 +585,22 @@
         },
         {
             "id": "6e8ae70b-30a1-4bff-87d8-69a54cdc3a7b",
+            "shortcode": "Gippert",
+            "citation": "J. Gippert. “New Perspectives of (Multi-)Spectral Manuscript Analysis,\" Pages 165–176 and [331–350] in C. Brockmann, D. Deckers, Daniel, L. Koch, Lutz, and S. Valente, eds. Handschriften-und Textforschung heute: Zur Überlieferung der griechischen Literatur. Festschrift für Dieter Harlfinger aus Anlass seines 70. Geburtstages. Serta Graeca 30. Wiesbaden, 2014",
             "type": {
                 "id": "cite",
                 "label": "Citation"
             }
         },
         {
-            "id": "5256f5da-f751-4cdc-85ce-35b9b20ae818",
+            "id": "f3ea9df2-bf85-465c-ac1d-6bd4cce71e21",
+            "shortcode": "NLI",
+            "citation": "Manuscripts in the Holy Monastery of St. Catherine at Mount Sinai. National Library of Israel",
             "type": {
                 "id": "otherdigversion",
                 "label": "Other Digital Version"
             },
-            "url": "https://www.nli.org.il/en/manuscripts/NNL_ALEPH990038917380205171/NLI",
-            "note": [
-                "Using CPG ID for dev purposes since we are missing a bibl for NLI..."
-            ]
+            "url": "https://www.nli.org.il/en/manuscripts/NNL_ALEPH990038917380205171/NLI"
         }
     ], 
     "iiif": [
@@ -652,7 +660,12 @@
         ],
         "rights": "Contact the Monastery of St. Catherine's of the Sinai."
     },
-    "internal": [ 
-        "This record is used only for purposes of developing the data portal and should therefore not be published, and should be deleted when development is complete" 
-    ] 
+    "cataloguer": [
+        {
+            "message": "ADDED: Ingested descriptions from the Syriac Parchment Descriptions project.",
+            "contributor": "Grigory Kessel; Natalia Smelova",
+            "added_by": "William Potter",
+            "timestamp": "2025-06-30T15:50:45+00:00"
+        }
+    ]
 }

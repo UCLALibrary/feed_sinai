@@ -168,7 +168,12 @@
     "parent": [ 
         "ark:/21198/te5f0f9b" 
     ], 
-    "internal": [ 
-        "Test record for development purposes; please delete." 
-    ] 
+    "cataloguer": [
+        {
+            "message": "ADDED: Ingested descriptions from the Syriac Parchment Descriptions project.",
+            "contributor": "Grigory Kessel; Natalia Smelova",
+            "added_by": "William Potter",
+            "timestamp": "2025-06-03T15:50:45+00:00"
+        }
+    ]
 }

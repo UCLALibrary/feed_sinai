@@ -303,6 +303,8 @@
     "bib": [
         { 
             "id": "757c5dad-a4c0-4c61-a5ab-66c5ebb30a54", 
+            "shortcode": "Perria",
+            "citation": "Perria, Lidia. Repertorio dei manoscritti greci di area orientale, palestino-sinaitica. Messina, 2000",
             "type": { 
                 "id": "cite", 
                 "label": "Citation" 
@@ -325,7 +327,12 @@
         ],
         "rights": "UUnless otherwise indicated all metadata associated with this manuscript is copyright the authors and released under Creative Commons Attribution 4.0 International License."
     },
-    "internal": [ 
-        "Test record for development purposes; please delete." 
-    ] 
+    "cataloguer": [
+        {
+            "message": "ADDED: Ingested descriptions from the Syriac Parchment Descriptions project.",
+            "contributor": "Grigory Kessel; Natalia Smelova",
+            "added_by": "William Potter",
+            "timestamp": "2025-06-28T15:50:45+00:00"
+        }
+    ]
 }

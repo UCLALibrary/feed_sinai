@@ -13,7 +13,21 @@
     "work_wit": [
         {
             "work": {
-                "id": "ark:/21198/s1k88r"
+                "desc_title": "Arsenius of Scetis' Commentary on the Pandectes of Antiochus of Palestine",
+                "creator": [
+                    "ark:/21198/s13010",
+                    "ark:/21198/s1kw2p"
+                ],
+                "genre": [
+                    {
+                        "id": "commentaries",
+                        "label": "Commentaries"
+                    },
+                    {
+                        "id": "theological-works",
+                        "label": "Theological works"
+                      }
+                ]
             },
             "as_written": "ܐܘܢܓܠܝܘܢ [ܩܕ]ܝܫܐ ܟܪܘܙܘܬܐ [ܕ]ܠ[ܘ]ܩܐ",
             "locus": "ff. 55v-144v",
