@@ -10,7 +10,7 @@ from tests.importers import test_sinai_types
 
 # feed_sinai.mapper = importlib.import_module("feed_sinai.mapper.dlp")
 
-BASE_PATH = 'tests/sinaiportal_json_export'
+BASE_PATH = 'tests/export_test'
 IMPORTER = SinaiJsonImporter(base_path=BASE_PATH)
 
 

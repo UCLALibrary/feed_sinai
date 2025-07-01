@@ -1707,9 +1707,9 @@ class TestConceptualWorkUnmerged:
 class TestManuscriptSolrRecord:
     def test_good_record(self) -> None:
         result = st.ManuscriptSolrRecord(
-            ms_obj=SinaiJsonImporter(
-                base_path='tests/sinaiportal_json_export'
-            ).get_merged_manuscript(Path('tests/sinaiportal_json_export/ms_objs/te5f0f9b.json'))
+            ms_obj=SinaiJsonImporter(base_path='tests/export_test').get_merged_manuscript(
+                Path('tests/export_test/ms_objs/te5f0f9b.json')
+            )
         )
 
         assert result.year_isim == {
