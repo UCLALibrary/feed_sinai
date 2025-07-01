@@ -1,6 +1,7 @@
 from datetime import date, datetime
 from pathlib import Path
 from typing import Optional, List
+from unittest.mock import Mock
 
 from pydantic import ValidationError
 import pytest
@@ -682,11 +683,11 @@ class TestInscribedLayer:
         )
 
 
-class TestLayerStub:
-    def test_good_LayerStub(self) -> None:
+class TestManuscriptLayer:
+    def test_good_ManuscriptLayerUnmerged(self) -> None:
         """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
 
-        st.LayerStub.model_validate_json(
+        st.ManuscriptLayerUnmerged.model_validate_json(
             """
             { 
                 "id": "ark:/21198/te5fp1ol", 
@@ -699,6 +700,39 @@ class TestLayerStub:
             } 
         """
         )
+
+    @pytest.mark.parametrize(
+        ('layer_type', 'layer_record', 'error'),
+        (
+            ('undertext', Mock(st.InscribedLayerMerged), 'has layer_record but should not'),
+            ('undertext', None, None),
+            ('overtext', Mock(st.InscribedLayerMerged), None),
+            ('overtext', None, 'no layer_record loaded'),
+            ('guest', Mock(st.InscribedLayerMerged), None),
+            ('guest', None, 'no layer_record loaded'),
+        ),
+    )
+    def test_ManuscriptLayerMerged(
+        self,
+        layer_type: str,
+        layer_record: st.ManuscriptLayerMerged | None,
+        error: str | None,
+    ) -> None:
+        if error:
+            with pytest.raises(ValidationError, match=error):
+                st.ManuscriptLayerMerged(
+                    id='ark:/21198/123',
+                    label='abc',
+                    type=st.ControlledTerm(id=layer_type, label=layer_type.capitalize()),
+                    layer_record=layer_record,
+                )
+        else:
+            st.ManuscriptLayerMerged(
+                id='ark:/21198/123',
+                label='ValidationError',
+                type=st.ControlledTerm(id=layer_type, label=layer_type.capitalize()),
+                layer_record=layer_record,
+            )
 
 
 class TestPart:

@@ -5,7 +5,7 @@
 from datetime import date, datetime
 from enum import Enum
 import re
-from typing import Any, List, Optional, Annotated, Self, Set, TypeVar, Iterator
+from typing import Any, List, Optional, Annotated, Self, Set, TypeVar
 from uuid import UUID
 
 import dateutil.parser
@@ -559,11 +559,37 @@ class InscribedLayerMerged(InscribedLayer):
 # from pydantic import AnyUrl, BaseModel, Field, constr
 
 
-class LayerStub(BaseModel):
+class ManuscriptLayer(BaseModel):
     id: Ark
     label: NonEmptyStr
     type: ControlledTerm
+    layer_record: Optional[InscribedLayerMerged] = None
     locus: Optional[NonEmptyStr] = None
+
+    def get_dates(self, date_type: str | None = None) -> list[AssocDateItem]:
+        if self.layer_record:
+            return self.layer_record.get_dates(date_type=date_type)
+        else:
+            return []
+
+
+class ManuscriptLayerUnmerged(ManuscriptLayer):
+    layer_record: None = None
+
+
+class ManuscriptLayerMerged(ManuscriptLayer):
+    @model_validator(mode='after')
+    def layer_record_based_on_layer_type(self) -> Self:
+        if self.type.id == 'undertext':
+            if self.layer_record:
+                raise ValueError(
+                    f'{self.type.label}  layer {self.id} has layer_record but should not'
+                )
+        else:
+            if not self.layer_record:
+                raise ValueError(f'no layer_record loaded for {self.type.label} layer {self.id}')
+
+        return self
 
 
 class Part(BaseModel):
@@ -579,18 +605,18 @@ class Part(BaseModel):
         None,
         description="A string expression of an object's dimensions, whether manuscript block, folio, or writing area",
     )
-    layer: List[LayerStub] | List[InscribedLayerMerged] = Field(..., min_length=1)
+    layer: List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged] = Field(..., min_length=1)
     para: Optional[List[ParaItem]] = None
     note: Optional[List[NoteItem]] = None
     related_mss: Optional[List[RelatedMs]] = None
 
 
 class PartUnmerged(Part):
-    layer: List[LayerStub] = Field(..., min_length=1)
+    layer: List[ManuscriptLayerUnmerged] = Field(..., min_length=1)
 
 
 class PartMerged(Part):
-    layer: List[InscribedLayerMerged] = Field(..., min_length=1)
+    layer: List[ManuscriptLayerMerged] = Field(..., min_length=1)
 
 
 class LocationItem(BaseModel):
@@ -706,7 +732,9 @@ class ManuscriptObject(BaseModel):
     )
     features: Optional[List[ControlledTerm]] = None
     part: List[Part] | List[PartUnmerged] | List[PartMerged] = Field(..., min_length=1)
-    layer: List[LayerStub] | List[InscribedLayerMerged] | None = Field(None, min_length=1)
+    layer: List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged] | None = Field(
+        None, min_length=1
+    )
     para: Optional[List[ParaItem]] = None
     location: List[LocationItem]
     assoc_date: Optional[List[AssocDateItem]] = None
@@ -735,23 +763,23 @@ class ManuscriptObject(BaseModel):
 
 class ManuscriptObjectUnmerged(ManuscriptObject):
     part: List[PartUnmerged]
-    layer: List[LayerStub] | None = Field(None, min_length=1)
+    layer: List[ManuscriptLayerUnmerged] | None = Field(None, min_length=1)
 
 
 class ManuscriptObjectMerged(ManuscriptObject):
     part: List[PartMerged]
-    layer: List[InscribedLayerMerged] | None = Field(None, min_length=1)
+    layer: List[ManuscriptLayerMerged] | None = Field(None, min_length=1)
 
-    def get_layers(self, layer_type: str | None = None) -> List[InscribedLayerMerged]:
+    def get_layers(self, layer_type: str | None = None) -> List[ManuscriptLayerMerged]:
         return [
             layer
             for part in self.part
             for layer in part.layer
-            if layer_type is None or layer.state.id == layer_type
+            if layer_type is None or layer.type.id == layer_type
         ] + [
             layer
             for layer in (self.layer or [])
-            if layer_type is None or layer.state.id == layer_type
+            if layer_type is None or layer.type.id == layer_type
         ]
 
 

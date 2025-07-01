@@ -151,7 +151,7 @@ class TestGetTextUnit:
 
 class TestGetLayer:
     def test_good_layer(self) -> None:
-        stub = st.LayerStub.model_validate_json(
+        raw = st.ManuscriptLayerUnmerged.model_validate_json(
             """
             {
                 "id": "ark:/21198/ten0p1ol",
@@ -164,220 +164,227 @@ class TestGetLayer:
             }
         """
         )
-        result = IMPORTER.get_layer(stub).model_dump(exclude_none=True, round_trip=True)
+        result = IMPORTER.get_layer(raw).model_dump(exclude_none=True, round_trip=True)
+
         assert result == {
-            'ark': 'ark:/21198/ten0p1ol',
-            'reconstruction': False,
-            'state': {'id': 'overtext', 'label': 'Overtext'},
-            'label': 'Arabic NF M 28, Part 1, Overtext',
+            'id': 'ark:/21198/ten0p1ol',
+            'label': 'Overtext layer (late 9th c., Kufic)',
+            'type': {'id': 'overtext', 'label': 'Overtext'},
             'locus': 'ff. 128-143',
-            'summary': 'Gospels, late 9th c., Arabic (Kufic)',
-            'extent': '16 ff.',
-            'writing': [
-                {
-                    'script': [
-                        {
-                            'id': 'kufic',
-                            'label': 'Kufic',
-                            'writing_system': 'Arabic',
-                        }
-                    ],
-                    'locus': 'ff. 128-143',
-                }
-            ],
-            'ink': [{'locus': 'ff. 128-143', 'note': ['Titles in red ink']}],
-            'text_unit': [
-                {
-                    'ark': 'ark:/21198/ten0p1olt1',
-                    'reconstruction': False,
-                    'label': 'Arabic Gospels',
-                    'locus': 'ff. 128r-143v',
-                    'lang': [{'id': 'arab1395', 'label': 'Arabic'}],
-                    'work_wit': [
-                        {
-                            'work': {
-                                'ark': 'ark:/21198/s12c7r',
-                                'pref_title': 'Matthew',
-                                'alt_title': ['Bible. Matthew'],
-                                'genre': [
-                                    {
-                                        'id': 'biblical-texts',
-                                        'label': 'Biblical texts',
-                                    },
-                                    {'id': 'gospel-books', 'label': 'Gospel books'},
-                                ],
-                                'rel_con': [
-                                    {
-                                        'label': 'Bible. Matthew',
-                                        'uri': st.AnyUrl(
-                                            st.AnyUrl('https://viaf.org/viaf/188427863')
-                                        ),
-                                        'source': st.RelatedConceptSource.VIAF,
-                                    },
-                                    {
-                                        'label': 'Bible. Matthew',
-                                        'uri': st.AnyUrl(
-                                            st.AnyUrl(
-                                                'http://id.loc.gov/authorities/names/n79056834'
-                                            )
-                                        ),
-                                        'source': st.RelatedConceptSource.LoC,
-                                    },
-                                ],
-                                'refno': [],
-                                'bib': [],
-                            },
-                            'locus': 'ff. 128r-130',
-                        },
-                        {
-                            'work': {
-                                'ark': 'ark:/21198/s1630k',
-                                'pref_title': 'Mark',
-                                'alt_title': ['Bible. Mark'],
-                                'genre': [
-                                    {
-                                        'id': 'biblical-texts',
-                                        'label': 'Biblical texts',
-                                    },
-                                    {'id': 'gospel-books', 'label': 'Gospel books'},
-                                ],
-                                'rel_con': [
-                                    {
-                                        'label': 'Bible. Mark',
-                                        'uri': st.AnyUrl('https://viaf.org/viaf/179823714'),
-                                        'source': st.RelatedConceptSource.VIAF,
-                                    },
-                                    {
-                                        'label': 'Bible. Mark',
-                                        'uri': st.AnyUrl(
-                                            'http://id.loc.gov/authorities/names/n78095773'
-                                        ),
-                                        'source': st.RelatedConceptSource.LoC,
-                                    },
-                                ],
-                                'refno': [],
-                                'bib': [],
-                            },
-                            'locus': 'ff. 130v-135r',
-                        },
-                        {
-                            'work': {
-                                'ark': 'ark:/21198/s1k88r',
-                                'pref_title': 'Luke',
-                                'alt_title': ['Bible. Luke'],
-                                'genre': [
-                                    {
-                                        'id': 'biblical-texts',
-                                        'label': 'Biblical texts',
-                                    },
-                                    {'id': 'gospel-books', 'label': 'Gospel books'},
-                                ],
-                                'rel_con': [
-                                    {
-                                        'label': 'Bible. Luke',
-                                        'uri': st.AnyUrl('http://viaf.org/viaf/257061095'),
-                                        'source': st.RelatedConceptSource.VIAF,
-                                    }
-                                ],
-                                'refno': [],
-                                'bib': [],
-                            },
-                            'locus': 'ff. 135r-140r',
-                        },
-                        {
-                            'work': {
-                                'ark': 'ark:/21198/s1388d',
-                                'pref_title': 'John',
-                                'alt_title': ['Bible. John'],
-                                'genre': [
-                                    {
-                                        'id': 'biblical-texts',
-                                        'label': 'Biblical texts',
-                                    },
-                                    {'id': 'gospel-books', 'label': 'Gospel books'},
-                                ],
-                                'rel_con': [
-                                    {
-                                        'label': 'Bible. John',
-                                        'uri': st.AnyUrl(
-                                            'https://viaf.org/viaf/57145910123927021804'
-                                        ),
-                                        'source': st.RelatedConceptSource.VIAF,
-                                    },
-                                    {
-                                        'label': 'Bible. John',
-                                        'uri': st.AnyUrl(
-                                            'http://id.loc.gov/authorities/names/n79060414'
-                                        ),
-                                        'source': st.RelatedConceptSource.LoC,
-                                    },
-                                ],
-                                'refno': [],
-                                'bib': [],
-                            },
-                            'locus': 'ff. 140v-143v',
-                        },
-                    ],
-                    'features': [],
-                    'note': [
-                        {
-                            'type': {'id': 'contents', 'label': 'Contents Note'},
-                            'value': 'The Gospels continue in Arabic NF M 8 and NF M 27',
-                        }
-                    ],
-                    'desc_provenance': {
-                        'program': [
-                            {
-                                'label': 'Sinai Palimpests Project',
-                                'description': 'Described as part of the Sinai Palimpsests Project (2006-2017). The Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Project provides scholarly identification and description of the undertext objects in a subset of palimpsested manuscripts in the Sinai collection, with minimal metadata for the overtexts of the host manuscripts.',
-                            }
-                        ]
-                    },
-                    'parent': ['ark:/21198/ten0p1ol'],
-                    'internal': ['Test record, delete after development is complete'],
-                }
-            ],
-            'assoc_date': [
-                {
-                    'type': {'id': 'origin', 'label': 'Origin Date'},
-                    'note': ['Paleographic dating'],
-                    'value': 'Second half 9th c. CE',
-                    'iso': {'not_before': 851, 'not_after': 900},
-                }
-            ],
-            'note': [
-                {
-                    'type': {'id': 'ornamentation', 'label': 'Ornamentation'},
-                    'value': 'Decorative headpieces throughout',
-                },
-                {
-                    'type': {'id': 'condition', 'label': 'Condition'},
-                    'value': 'Several damaged folios were repaired and reinforced more recently',
-                },
-            ],
-            'bib': [
-                {
-                    'id': st.UUID('36ac2d29-349f-496d-b4ea-aff4e605c4ba'),
-                    'type': {'id': 'ref', 'label': 'Reference Work'},
-                    'range': 'p. 48-90',
-                }
-            ],
-            'parent': ['ark:/21198/ten02zkr'],
-            'desc_provenance': {
-                'program': [
+            'layer_record': {
+                'ark': 'ark:/21198/ten0p1ol',
+                'reconstruction': False,
+                'state': {'id': 'overtext', 'label': 'Overtext'},
+                'label': 'Arabic NF M 28, Part 1, Overtext',
+                'locus': 'ff. 128-143',
+                'summary': 'Gospels, late 9th c., Arabic (Kufic)',
+                'extent': '16 ff.',
+                'writing': [
                     {
-                        'label': 'Sinai Palimpests Project',
-                        'description': 'Described as part of the Sinai Palimpsests Project (2006-2017). The Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Project provides scholarly identification and description of the undertext objects in a subset of palimpsested manuscripts in the Sinai collection, with minimal metadata for the overtexts of the host manuscripts.',
+                        'script': [
+                            {
+                                'id': 'kufic',
+                                'label': 'Kufic',
+                                'writing_system': 'Arabic',
+                            }
+                        ],
+                        'locus': 'ff. 128-143',
                     }
-                ]
+                ],
+                'ink': [{'locus': 'ff. 128-143', 'note': ['Titles in red ink']}],
+                'text_unit': [
+                    {
+                        'ark': 'ark:/21198/ten0p1olt1',
+                        'reconstruction': False,
+                        'label': 'Arabic Gospels',
+                        'locus': 'ff. 128r-143v',
+                        'lang': [{'id': 'arab1395', 'label': 'Arabic'}],
+                        'work_wit': [
+                            {
+                                'work': {
+                                    'ark': 'ark:/21198/s12c7r',
+                                    'pref_title': 'Matthew',
+                                    'alt_title': ['Bible. Matthew'],
+                                    'genre': [
+                                        {
+                                            'id': 'biblical-texts',
+                                            'label': 'Biblical texts',
+                                        },
+                                        {'id': 'gospel-books', 'label': 'Gospel books'},
+                                    ],
+                                    'rel_con': [
+                                        {
+                                            'label': 'Bible. Matthew',
+                                            'uri': st.AnyUrl(
+                                                st.AnyUrl('https://viaf.org/viaf/188427863')
+                                            ),
+                                            'source': st.RelatedConceptSource.VIAF,
+                                        },
+                                        {
+                                            'label': 'Bible. Matthew',
+                                            'uri': st.AnyUrl(
+                                                st.AnyUrl(
+                                                    'http://id.loc.gov/authorities/names/n79056834'
+                                                )
+                                            ),
+                                            'source': st.RelatedConceptSource.LoC,
+                                        },
+                                    ],
+                                    'refno': [],
+                                    'bib': [],
+                                },
+                                'locus': 'ff. 128r-130',
+                            },
+                            {
+                                'work': {
+                                    'ark': 'ark:/21198/s1630k',
+                                    'pref_title': 'Mark',
+                                    'alt_title': ['Bible. Mark'],
+                                    'genre': [
+                                        {
+                                            'id': 'biblical-texts',
+                                            'label': 'Biblical texts',
+                                        },
+                                        {'id': 'gospel-books', 'label': 'Gospel books'},
+                                    ],
+                                    'rel_con': [
+                                        {
+                                            'label': 'Bible. Mark',
+                                            'uri': st.AnyUrl('https://viaf.org/viaf/179823714'),
+                                            'source': st.RelatedConceptSource.VIAF,
+                                        },
+                                        {
+                                            'label': 'Bible. Mark',
+                                            'uri': st.AnyUrl(
+                                                'http://id.loc.gov/authorities/names/n78095773'
+                                            ),
+                                            'source': st.RelatedConceptSource.LoC,
+                                        },
+                                    ],
+                                    'refno': [],
+                                    'bib': [],
+                                },
+                                'locus': 'ff. 130v-135r',
+                            },
+                            {
+                                'work': {
+                                    'ark': 'ark:/21198/s1k88r',
+                                    'pref_title': 'Luke',
+                                    'alt_title': ['Bible. Luke'],
+                                    'genre': [
+                                        {
+                                            'id': 'biblical-texts',
+                                            'label': 'Biblical texts',
+                                        },
+                                        {'id': 'gospel-books', 'label': 'Gospel books'},
+                                    ],
+                                    'rel_con': [
+                                        {
+                                            'label': 'Bible. Luke',
+                                            'uri': st.AnyUrl('http://viaf.org/viaf/257061095'),
+                                            'source': st.RelatedConceptSource.VIAF,
+                                        }
+                                    ],
+                                    'refno': [],
+                                    'bib': [],
+                                },
+                                'locus': 'ff. 135r-140r',
+                            },
+                            {
+                                'work': {
+                                    'ark': 'ark:/21198/s1388d',
+                                    'pref_title': 'John',
+                                    'alt_title': ['Bible. John'],
+                                    'genre': [
+                                        {
+                                            'id': 'biblical-texts',
+                                            'label': 'Biblical texts',
+                                        },
+                                        {'id': 'gospel-books', 'label': 'Gospel books'},
+                                    ],
+                                    'rel_con': [
+                                        {
+                                            'label': 'Bible. John',
+                                            'uri': st.AnyUrl(
+                                                'https://viaf.org/viaf/57145910123927021804'
+                                            ),
+                                            'source': st.RelatedConceptSource.VIAF,
+                                        },
+                                        {
+                                            'label': 'Bible. John',
+                                            'uri': st.AnyUrl(
+                                                'http://id.loc.gov/authorities/names/n79060414'
+                                            ),
+                                            'source': st.RelatedConceptSource.LoC,
+                                        },
+                                    ],
+                                    'refno': [],
+                                    'bib': [],
+                                },
+                                'locus': 'ff. 140v-143v',
+                            },
+                        ],
+                        'features': [],
+                        'note': [
+                            {
+                                'type': {'id': 'contents', 'label': 'Contents Note'},
+                                'value': 'The Gospels continue in Arabic NF M 8 and NF M 27',
+                            }
+                        ],
+                        'desc_provenance': {
+                            'program': [
+                                {
+                                    'label': 'Sinai Palimpests Project',
+                                    'description': 'Described as part of the Sinai Palimpsests Project (2006-2017). The Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Project provides scholarly identification and description of the undertext objects in a subset of palimpsested manuscripts in the Sinai collection, with minimal metadata for the overtexts of the host manuscripts.',
+                                }
+                            ]
+                        },
+                        'parent': ['ark:/21198/ten0p1ol'],
+                        'internal': ['Test record, delete after development is complete'],
+                    }
+                ],
+                'assoc_date': [
+                    {
+                        'type': {'id': 'origin', 'label': 'Origin Date'},
+                        'note': ['Paleographic dating'],
+                        'value': 'Second half 9th c. CE',
+                        'iso': {'not_before': 851, 'not_after': 900},
+                    }
+                ],
+                'note': [
+                    {
+                        'type': {'id': 'ornamentation', 'label': 'Ornamentation'},
+                        'value': 'Decorative headpieces throughout',
+                    },
+                    {
+                        'type': {'id': 'condition', 'label': 'Condition'},
+                        'value': 'Several damaged folios were repaired and reinforced more recently',
+                    },
+                ],
+                'bib': [
+                    {
+                        'id': st.UUID('36ac2d29-349f-496d-b4ea-aff4e605c4ba'),
+                        'type': {'id': 'ref', 'label': 'Reference Work'},
+                        'range': 'p. 48-90',
+                    }
+                ],
+                'parent': ['ark:/21198/ten02zkr'],
+                'desc_provenance': {
+                    'program': [
+                        {
+                            'label': 'Sinai Palimpests Project',
+                            'description': 'Described as part of the Sinai Palimpsests Project (2006-2017). The Sinai Palimpsests Project was sponsored by St. Catherine’s Monastery of the Sinai in partnership with the Early Manuscripts Electronic Library and the UCLA Library, and with funding from Arcadia. The Project provides scholarly identification and description of the undertext objects in a subset of palimpsested manuscripts in the Sinai collection, with minimal metadata for the overtexts of the host manuscripts.',
+                        }
+                    ]
+                },
+                'internal': ['Test record for development purposes; please delete.'],
             },
-            'internal': ['Test record for development purposes; please delete.'],
         }
 
     def test_loads_all_layers(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'layers').glob('*.json'):
-            stub = st.LayerStub(
+            stub = st.ManuscriptLayerUnmerged(
                 id='ark:/21198/' + path.stem,
                 label='whatevs',
                 type={'id': 'what', 'label': 'ever'},

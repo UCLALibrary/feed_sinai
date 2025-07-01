@@ -86,14 +86,17 @@ class SinaiJsonImporter:
             work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
         )
 
-    def get_layer(self, layer: st.LayerStub) -> st.InscribedLayerMerged:
-        path = self.base_path / 'layers' / self.get_filename(layer.id)
-        raw = st.InscribedLayerUnmerged.model_validate_json(path.read_text())
+    def get_layer(self, ms_layer: st.ManuscriptLayerUnmerged) -> st.ManuscriptLayer:
+        layer_record: Optional[st.InscribedLayerMerged] = None
+        if ms_layer.type.id != 'undertext':
+            path = self.base_path / 'layers' / self.get_filename(ms_layer.id)
+            raw = st.InscribedLayerUnmerged.model_validate_json(path.read_text())
+            layer_record = raw.convert(
+                st.InscribedLayerMerged,
+                text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            )
 
-        return raw.convert(
-            st.InscribedLayerMerged,
-            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
-        )
+        return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
 
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
         return raw.convert(
