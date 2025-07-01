@@ -120,20 +120,7 @@ class SinaiJsonImporter:
             path.write_text(record.model_dump_json(exclude_none=True))
 
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
-        return json.loads(
-            st.ManuscriptSolrRecord(
-                id=ms_obj.ark,
-                manuscript_json_ss=ms_obj.model_dump_json(exclude_none=True),
-                descriptive_title_tesim={*ms_obj.deep_get('desc_title')},
-                uniform_title_tesim={*ms_obj.deep_get('uniform_title')},
-                # date_created_tesim={""},  # TODO
-                human_readable_language_tesim={
-                    getattr(x, 'label', x) for x in ms_obj.deep_get('lang')
-                },
-                # name_fields_index_tesim=[*ms_obj.deep_get("")},  # TODO
-                # names_sim=[*ms_obj.deep_get("")},  # TODO
-            ).model_dump_json(exclude_none=True)
-        )
+        return json.loads(st.ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json(exclude_none=True))
 
     def load_to_solr(self) -> None:
         self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])

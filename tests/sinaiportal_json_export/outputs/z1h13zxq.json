@@ -72,7 +72,8 @@
           "assoc_date": [
             {
               "iso": {
-                "not_before": "0932"
+                "not_before": 932,
+                "not_after": 932
               },
               "value": "932  CE",
               "type": { "id": "origin", "label": "Date of Origin" }
@@ -161,7 +162,7 @@
           "assoc_date": [
             {
               "value": "ca. 9th-10th c.  CE",
-              "iso": { "not_before": "0801", "not_after": "0950" },
+              "iso": { "not_before": 801, "not_after": 950 },
               "type": { "id": "origin", "label": "Date of Origin" }
             }
           ],
@@ -276,7 +277,7 @@
           "assoc_date": [
             {
               "value": "ca. 9th-10th c.  CE",
-              "iso": { "not_before": "0801", "not_after": "0950" },
+              "iso": { "not_before": 801, "not_after": 950 },
               "type": { "id": "origin", "label": "Date of Origin" }
             }
           ],
@@ -359,7 +360,7 @@
           "assoc_date": [
             {
               "value": "ca. 6th- mid 10th c.  CE",
-              "iso": { "not_before": "0501", "not_after": "0948" },
+              "iso": { "not_before": 501, "not_after": 948 },
               "type": { "id": "origin", "label": "Date of Origin" }
             }
           ],
@@ -455,7 +456,7 @@
           "assoc_date": [
             {
               "value": "ca. 9th-mid 10th c.  CE",
-              "iso": { "not_before": "0801", "not_after": "0950" },
+              "iso": { "not_before": 801, "not_after": 950 },
               "type": { "id": "origin", "label": "Date of Origin" }
             }
           ],

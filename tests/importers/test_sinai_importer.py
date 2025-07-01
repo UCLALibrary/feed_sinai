@@ -29,7 +29,7 @@ def test_get_agent() -> None:
         'gender': {'id': 'man', 'label': 'Man'},
         'death': {
             'value': 'ca. 400 CE',
-            'iso': {'not_before': '0375', 'not_after': '0425'},
+            'iso': {'not_before': 375, 'not_after': 425},
         },
         'rel_con': [
             {
@@ -342,7 +342,7 @@ class TestGetLayer:
                     'type': {'id': 'origin', 'label': 'Origin Date'},
                     'note': ['Paleographic dating'],
                     'value': 'Second half 9th c. CE',
-                    'iso': {'not_before': '0851', 'not_after': '0900'},
+                    'iso': {'not_before': 851, 'not_after': 900},
                 }
             ],
             'note': [
@@ -403,3 +403,16 @@ class TestGetMergedManuscript:
             IMPORTER.get_merged_manuscript(path)
             n_files += 1
         assert n_files == 15
+
+
+class TestIterateMergedRecords:
+    pass
+
+
+class TestSaveMergedRecords:
+    pass
+
+
+class TestSolrRecord:
+    def test_years(self) -> None:
+        pass

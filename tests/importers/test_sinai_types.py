@@ -1,9 +1,12 @@
+from datetime import date, datetime
+from pathlib import Path
 from typing import Optional, List
 
 from pydantic import ValidationError
 import pytest
 
 import feed_sinai.sinai_types as st
+from feed_sinai.sinai_json_importer import SinaiJsonImporter
 
 
 class ExampleModel(st.BaseModel):
@@ -89,20 +92,40 @@ class TestControlledTerm:
 #         assert result.gender == st.Gender.other
 
 
+@pytest.mark.parametrize(
+    ('input', 'result'),
+    (
+        ('1980', 1980),
+        ('1980-09-21', 1980),
+        (1980, 1980),
+        (date(1980, 9, 21), 1980),
+        (datetime(1980, 9, 21, hour=12, minute=5), 1980),
+    ),
+)
+def test_parse_date(input: str | int | date | datetime, result: int) -> None:
+    assert st.parse_date(input) == result
+
+
 class TestIso:
-    ISO = st.Iso(not_before='0010', not_after='0100')
+    ISO = {'not_before': 10, 'not_after': 100}
 
     def test_good_iso(self) -> None:
-        assert st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}') == self.ISO
+        assert (
+            st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}').model_dump()
+            == self.ISO
+        )
 
     def test_no_notafter(self) -> None:
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
-        assert result.not_before == '0010'
-        assert result.not_after is None
+        assert result.not_before == 10
+        assert result.not_after == 10
 
     def test_no_notbefore(self) -> None:
         with pytest.raises(ValidationError):
             st.Iso.model_validate_json('{"not_after": "0010"}')
+
+    def test_get_years(self) -> None:
+        assert st.Iso(not_before=121, not_after=123).get_years() == {121, 122, 123}
 
 
 class TestDate:
@@ -1679,3 +1702,18 @@ class TestConceptualWorkUnmerged:
             }
         """
         )
+
+
+class TestManuscriptSolrRecord:
+    def test_good_record(self) -> None:
+        result = st.ManuscriptSolrRecord(
+            ms_obj=SinaiJsonImporter(
+                base_path='tests/sinaiportal_json_export'
+            ).get_merged_manuscript(Path('tests/sinaiportal_json_export/ms_objs/te5f0f9b.json'))
+        )
+
+        assert result.year_isim == {
+            *range(601, 700),
+            700,  # range is INCLUSIVE of 700
+            1292,
+        }
