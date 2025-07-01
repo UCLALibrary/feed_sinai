@@ -247,17 +247,17 @@ class AssocNameItem(BaseModel):
 
 
 class AssocNameItemMerged(AssocNameItem):
-    agent: Optional[Agent] = None
+    agent_record: Optional[Agent] = None
 
     @model_validator(mode='after')
     def agent_record_loaded(self) -> Self:
-        if self.id and not self.agent:
-            raise ValueError('has agent id but agent record not loaded')
+        if self.id and not self.agent_record:
+            raise ValueError('has agent id but agent_record not loaded')
         return self
 
 
 class AssocNameItemUnmerged(AssocNameItem):
-    agent: None = None
+    agent_record: None = None
 
 
 class ConceptualWork(BaseModel):
@@ -296,7 +296,11 @@ class ConceptualWorkMerged(ConceptualWork):
 #   timestamp: 2025-05-28T17:22:58+00:00
 
 
-# TODO: what's up here?
+class WorkBriefCreator(BaseModel):
+    id: Ark
+    agent_record: Agent
+
+
 class WorkStub(BaseModel):
     id: Ark
 
@@ -304,7 +308,7 @@ class WorkStub(BaseModel):
 # TODO: what's up here?
 class WorkBrief(BaseModel):
     desc_title: Optional[NonEmptyStr] = None
-    creator: Optional[List[Ark] | List[Agent]] = Field(None, min_length=1)
+    creator: Optional[List[Ark] | List[WorkBriefCreator]] = Field(None, min_length=1)
     genre: Optional[List[ControlledTerm]] = Field(None, min_length=1)
 
 
@@ -313,7 +317,7 @@ class WorkBriefUnmerged(WorkBrief):
 
 
 class WorkBriefMerged(WorkBrief):
-    creator: Optional[List[Agent]] = Field(None, min_length=1)
+    creator: Optional[List[WorkBriefCreator]] = Field(None, min_length=1)
 
 
 class ExcerptItem(BaseModel):

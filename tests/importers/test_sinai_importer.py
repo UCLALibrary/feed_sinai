@@ -60,7 +60,7 @@ def test_get_assoc_name_item() -> None:
     unmerged = test_sinai_types.TestAssocNameItem.EPHREM.convert(st.AssocNameItemUnmerged)
     result = IMPORTER.get_assoc_name_item(unmerged)
     assert isinstance(result, st.AssocNameItemMerged)
-    assert result.agent and result.agent.alt_name == ['Ephrem the Syrian', 'ܐܦܪܝܡ']
+    assert result.agent_record and result.agent_record.alt_name == ['Ephrem the Syrian', 'ܐܦܪܝܡ']
 
 
 class TestGetWork:
@@ -83,8 +83,8 @@ def test_get_work_brief() -> None:
     raw = st.WorkBriefUnmerged(desc_title='Abc123', creator=['ark:/21198/s1b59x'])
     result = IMPORTER.get_work_brief(raw)
     assert isinstance(result, st.WorkBriefMerged)
-    assert result.creator and isinstance(result.creator[0], st.Agent)
-    assert result.creator[0].pref_name == 'Onuphrius'
+    assert result.creator and isinstance(result.creator[0].agent_record, st.Agent)
+    assert result.creator[0].agent_record.pref_name == 'Onuphrius'
 
 
 class TestGetWorkWit:
@@ -104,8 +104,8 @@ class TestGetWorkWit:
         result = IMPORTER.get_work_wit(raw)
         assert isinstance(result, st.WorkWitItemMerged)
         assert isinstance(result.work, st.WorkBriefMerged)
-        assert result.work.creator and isinstance(result.work.creator[0], st.Agent)
-        assert result.work.creator[0].pref_name == 'Onuphrius'
+        assert result.work.creator and isinstance(result.work.creator[0].agent_record, st.Agent)
+        assert result.work.creator[0].agent_record.pref_name == 'Onuphrius'
 
 
 class TestGetTextUnit:

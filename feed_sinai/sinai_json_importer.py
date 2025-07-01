@@ -40,7 +40,9 @@ class SinaiJsonImporter:
         return st.Agent.model_validate_json(path.read_text())
 
     def get_assoc_name_item(self, raw: st.AssocNameItemUnmerged) -> st.AssocNameItemMerged:
-        return raw.convert(st.AssocNameItemMerged, agent=self.get_agent(raw.id) if raw.id else None)
+        return raw.convert(
+            st.AssocNameItemMerged, agent_record=self.get_agent(raw.id) if raw.id else None
+        )
 
     def get_conceptual_work(self, stub: st.WorkStub) -> st.ConceptualWorkMerged:
         path = self.base_path / 'works' / self.get_filename(stub.id)
@@ -58,7 +60,11 @@ class SinaiJsonImporter:
     def get_work_brief(self, raw: st.WorkBriefUnmerged) -> st.WorkBriefMerged:
         return raw.convert(
             st.WorkBriefMerged,
-            creator=([self.get_agent(id) for id in raw.creator] if raw.creator else None),
+            creator=(
+                [st.WorkBriefCreator(id=id, agent_record=self.get_agent(id)) for id in raw.creator]
+                if raw.creator
+                else None
+            ),
         )
 
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:

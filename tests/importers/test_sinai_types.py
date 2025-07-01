@@ -471,8 +471,8 @@ class TestAssocNameItem:
         )
 
     def test_good_TestAssocNameItemMerged(self) -> None:
-        result = self.EPHREM.convert(st.AssocNameItemMerged, agent=TestAgent.EPHREM)
-        assert result.agent == TestAgent.EPHREM
+        result = self.EPHREM.convert(st.AssocNameItemMerged, agent_record=TestAgent.EPHREM)
+        assert result.agent_record == TestAgent.EPHREM
 
 
 class TestAssocPlaceItem:
