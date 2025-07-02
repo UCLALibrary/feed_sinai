@@ -86,31 +86,70 @@
           "id": "ark:/21198/s1gh06",
           "label": "Georgian Undertext: Iadgari, Assumption",
           "type": { "id": "undertext", "label": "Undertext" },
-          "locus": "ff. 144–145, 204–205, 208–209, rear pastedown, 140–141"
+          "locus": "ff. 144–145, 204–205, 208–209, rear pastedown, 140–141",
+          "script": ["Nuskhurimt"],
+          "lang": ["Georgian"],
+          "orig_date": [
+            {
+              "value": "ca. 9th-10th c.  CE",
+              "iso": { "not_before": 801, "not_after": 950 },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ]
         },
         {
           "id": "ark:/21198/s1bp7b",
           "label": "Georgian Undertext: Heirmologion",
           "type": { "id": "undertext", "label": "Undertext" },
-          "locus": "ff. 123v, 138r"
+          "locus": "ff. 123v, 138r",
+          "script": ["Nuskhurimt"],
+          "lang": ["Georgian"],
+          "orig_date": [
+            {
+              "value": "ca. 9th-10th c.  CE",
+              "iso": { "not_before": 801, "not_after": 950 },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ]
         },
         {
           "id": "ark:/21198/s1705r",
           "label": "Georgian Undertext: Unidentified text",
           "type": { "id": "undertext", "label": "Undertext" },
-          "locus": "rear pastedown"
+          "locus": "rear pastedown",
+          "script": ["Asomtavruli"],
+          "lang": ["Georgian"],
+          "orig_date": [
+            {
+              "value": "ca. 6th- mid 10th c.  CE",
+              "iso": { "not_before": 501, "not_after": 948 },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ]
         },
         {
           "id": "ark:/21198/s1362f",
           "label": "Georgian Undertext: Hymns",
           "type": { "id": "undertext", "label": "Undertext" },
-          "locus": "ff. 130–131, 143, 146"
+          "locus": "ff. 130–131, 143, 146",
+          "script": ["Nuskhurimt"],
+          "lang": ["Georgian"],
+          "orig_date": [
+            {
+              "value": "ca. 9th-mid 10th c.  CE",
+              "iso": { "not_before": 801, "not_after": 950 },
+              "type": { "id": "origin", "label": "Date of Origin" }
+            }
+          ]
         },
         {
           "id": "ark:/21198/s1zh1x",
           "label": "Greek Undertext: Unidentified text",
           "type": { "id": "undertext", "label": "Undertext" },
-          "locus": "ff, 206–207"
+          "locus": "ff, 206–207",
+          "script": ["Undetermined (Greek)"],
+          "lang": ["Greek"],
+          "orig_date": []
         }
       ]
     }

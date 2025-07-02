@@ -9,6 +9,8 @@ import pytest
 import feed_sinai.sinai_types as st
 from feed_sinai.sinai_json_importer import SinaiJsonImporter
 
+IMPORTER = SinaiJsonImporter(base_path='tests/export_test')
+
 
 class ExampleModel(st.BaseModel):
     children: 'List[ExampleModel]' = []
@@ -701,37 +703,36 @@ class TestManuscriptLayer:
         """
         )
 
-    @pytest.mark.parametrize(
-        ('layer_type', 'layer_record', 'error'),
-        (
-            ('undertext', Mock(st.InscribedLayerMerged), 'has layer_record but should not'),
-            ('undertext', None, None),
-            ('overtext', Mock(st.InscribedLayerMerged), None),
-            ('overtext', None, 'no layer_record loaded'),
-            ('guest', Mock(st.InscribedLayerMerged), None),
-            ('guest', None, 'no layer_record loaded'),
-        ),
-    )
-    def test_ManuscriptLayerMerged(
-        self,
-        layer_type: str,
-        layer_record: st.ManuscriptLayerMerged | None,
-        error: str | None,
-    ) -> None:
-        if error:
-            with pytest.raises(ValidationError, match=error):
-                st.ManuscriptLayerMerged(
-                    id='ark:/21198/123',
-                    label='abc',
-                    type=st.ControlledTerm(id=layer_type, label=layer_type.capitalize()),
-                    layer_record=layer_record,
-                )
-        else:
-            st.ManuscriptLayerMerged(
+    def test_ManuscriptLayerMerged(self) -> None:
+        st.ManuscriptLayerMerged(
+            id='ark:/21198/123',
+            label='Test Layer',
+            type=st.ControlledTerm(id='guest', label='Guest Content'),
+            layer_record=Mock(st.InscribedLayerMerged),
+        )
+
+    def test_good_UndertextManuscriptLayerMerged(self) -> None:
+        st.UndertextManuscriptLayerMerged(
+            id='ark:/21198/123', label='Test Layer', script=['Tengwar'], lang=['Sindarin']
+        )
+
+    def test_UndertextManuscriptLayerMerged_with_layer_record(self) -> None:
+        with pytest.raises(ValidationError, match=r'layer_record\s+Input should be None'):
+            st.UndertextManuscriptLayerMerged(
                 id='ark:/21198/123',
-                label='ValidationError',
-                type=st.ControlledTerm(id=layer_type, label=layer_type.capitalize()),
-                layer_record=layer_record,
+                label='Test Layer',
+                layer_record=Mock(st.InscribedLayerMerged),
+            )
+
+    def test_UndertextManuscriptLayerMerged_wrong_type(self) -> None:
+        with pytest.raises(
+            ValidationError,
+            match='UndertextManuscriptLayerMerged records must have type="undertext"',
+        ):
+            st.UndertextManuscriptLayerMerged(
+                id='ark:/21198/123',
+                label='Test Layer',
+                type=st.ControlledTerm(id='guest', label='Guest Content'),
             )
 
 
@@ -1743,9 +1744,7 @@ class TestConceptualWorkUnmerged:
 class TestManuscriptSolrRecord:
     def test_good_record(self) -> None:
         result = st.ManuscriptSolrRecord(
-            ms_obj=SinaiJsonImporter(base_path='tests/export_test').get_merged_manuscript(
-                Path('tests/export_test/ms_objs/te5f0f9b.json')
-            )
+            ms_obj=IMPORTER.get_merged_manuscript(Path('tests/export_test/ms_objs/te5f0f9b.json'))
         )
 
         assert result.year_isim == {

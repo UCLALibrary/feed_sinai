@@ -86,17 +86,44 @@ class SinaiJsonImporter:
             work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
         )
 
-    def get_layer(self, ms_layer: st.ManuscriptLayerUnmerged) -> st.ManuscriptLayer:
-        layer_record: Optional[st.InscribedLayerMerged] = None
-        if ms_layer.type.id != 'undertext':
-            path = self.base_path / 'layers' / self.get_filename(ms_layer.id)
-            raw = st.InscribedLayerUnmerged.model_validate_json(path.read_text())
-            layer_record = raw.convert(
-                st.InscribedLayerMerged,
-                text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+    def get_uto_ms_ark(self, layer_record: st.InscribedLayerMerged) -> list[st.Ark] | None:
+        result = []
+        for parent_ark in layer_record.parent:
+            parent_ms = st.ManuscriptObjectUnmerged.model_validate_json(
+                (self.base_path / 'ms_objs' / self.get_filename(parent_ark)).read_text()
             )
+            if parent_ms.type.id == 'uto':
+                result.append(parent_ark)
+        return result if len(result) else None
 
-        return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
+    def get_layer(
+        self, ms_layer: st.ManuscriptLayerUnmerged
+    ) -> st.ManuscriptLayerMerged | st.UndertextManuscriptLayerMerged:
+        layer_record_path = self.base_path / 'layers' / self.get_filename(ms_layer.id)
+
+        raw = st.InscribedLayerUnmerged.model_validate_json(layer_record_path.read_text())
+
+        layer_record = raw.convert(
+            st.InscribedLayerMerged,
+            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+        )
+
+        if ms_layer.type.id == 'undertext':
+            return ms_layer.convert(
+                st.UndertextManuscriptLayerMerged,
+                uto_ms_ark=self.get_uto_ms_ark(layer_record),
+                script=[
+                    script.label
+                    for writing_item in layer_record.writing
+                    for script in writing_item.script
+                ],
+                lang=[
+                    lang.label for text_unit in layer_record.text_unit for lang in text_unit.lang
+                ],
+                orig_date=[date for date in layer_record.get_dates(date_type='origin')],
+            )
+        else:
+            return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
 
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
         return raw.convert(

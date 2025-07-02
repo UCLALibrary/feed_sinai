@@ -578,17 +578,23 @@ class ManuscriptLayerUnmerged(ManuscriptLayer):
 
 
 class ManuscriptLayerMerged(ManuscriptLayer):
-    @model_validator(mode='after')
-    def layer_record_based_on_layer_type(self) -> Self:
-        if self.type.id == 'undertext':
-            if self.layer_record:
-                raise ValueError(
-                    f'{self.type.label}  layer {self.id} has layer_record but should not'
-                )
-        else:
-            if not self.layer_record:
-                raise ValueError(f'no layer_record loaded for {self.type.label} layer {self.id}')
+    layer_record: InscribedLayerMerged
 
+
+class UndertextManuscriptLayerMerged(ManuscriptLayer):
+    layer_record: None = None
+
+    type: ControlledTerm = ControlledTerm(id='undertext', label='Undertext')
+    uto_ms_ark: List[Ark] | None = None
+
+    script: List[str] | None = None
+    lang: List[str] | None = None
+    orig_date: List[AssocDateItem] | None = None
+
+    @model_validator(mode='after')
+    def undertext_type(self) -> Self:
+        if self.type != ControlledTerm(id='undertext', label='Undertext'):
+            raise ValueError('UndertextManuscriptLayerMerged records must have type="undertext"')
         return self
 
 
@@ -605,7 +611,9 @@ class Part(BaseModel):
         None,
         description="A string expression of an object's dimensions, whether manuscript block, folio, or writing area",
     )
-    layer: List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged] = Field(..., min_length=1)
+    layer: (
+        List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]
+    ) = Field(..., min_length=1)
     para: Optional[List[ParaItem]] = None
     note: Optional[List[NoteItem]] = None
     related_mss: Optional[List[RelatedMs]] = None
@@ -616,7 +624,7 @@ class PartUnmerged(Part):
 
 
 class PartMerged(Part):
-    layer: List[ManuscriptLayerMerged] = Field(..., min_length=1)
+    layer: List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged] = Field(..., min_length=1)
 
 
 class LocationItem(BaseModel):
@@ -732,9 +740,11 @@ class ManuscriptObject(BaseModel):
     )
     features: Optional[List[ControlledTerm]] = None
     part: List[Part] | List[PartUnmerged] | List[PartMerged] = Field(..., min_length=1)
-    layer: List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged] | None = Field(
-        None, min_length=1
-    )
+    layer: (
+        List[ManuscriptLayerUnmerged]
+        | List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]
+        | None
+    ) = Field(None, min_length=1)
     para: Optional[List[ParaItem]] = None
     location: List[LocationItem]
     assoc_date: Optional[List[AssocDateItem]] = None
@@ -768,9 +778,13 @@ class ManuscriptObjectUnmerged(ManuscriptObject):
 
 class ManuscriptObjectMerged(ManuscriptObject):
     part: List[PartMerged]
-    layer: List[ManuscriptLayerMerged] | None = Field(None, min_length=1)
+    layer: List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged] | None = Field(
+        None, min_length=1
+    )
 
-    def get_layers(self, layer_type: str | None = None) -> List[ManuscriptLayerMerged]:
+    def get_layers(
+        self, layer_type: str | None = None
+    ) -> List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]:
         return [
             layer
             for part in self.part
