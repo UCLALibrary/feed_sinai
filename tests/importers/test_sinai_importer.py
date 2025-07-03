@@ -371,6 +371,14 @@ class TestGetLayer:
             },
         }
 
+    def test_loads_assoc_name_agents(self) -> None:
+        result = IMPORTER.get_layer(
+            st.ManuscriptLayerUnmerged(
+                id='ark:/21198/te5fp1ol', label='abc', type=st.ControlledTerm(id='a', label='b')
+            )
+        )
+        assert result.layer_record.assoc_name[0].agent_record.pref_name == 'Ephrem'  # type: ignore
+
     def test_loads_all_layers(self) -> None:
         n_files = 0
         for path in (IMPORTER.base_path / 'layers').glob('*.json'):
@@ -396,6 +404,10 @@ class TestGetMergedManuscript:
         assert isinstance(test_ms_layer, st.UndertextManuscriptLayerMerged)
         assert test_ms_layer.model_dump().get('layer_record') is None
         assert json.loads(result.model_dump_json()) == expected
+
+    @pytest.mark.xfail  # No test data yet
+    def test_loads_assoc_name_agents(self) -> None:
+        raise NotImplementedError
 
     @pytest.mark.xfail  # Don't seem to have good data here yet
     def test_loads_all_manuscripts(self) -> None:

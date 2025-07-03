@@ -71,6 +71,12 @@ class SinaiJsonImporter:
             ),
         )
 
+    def get_para(self, raw: st.ParaItemUnmerged) -> st.ParaItemMerged:
+        return raw.convert(
+            st.ParaItemMerged,
+            assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
+        )
+
     def get_text_unit(self, stub: st.TextUnitStub) -> st.TextUnit:
         path = self.base_path / 'text_units' / self.get_filename(stub.id)
         raw = st.TextUnitUnmerged.model_validate_json(path.read_text())
@@ -78,6 +84,7 @@ class SinaiJsonImporter:
         return raw.convert(
             st.TextUnitMerged,
             work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
+            para=[self.get_para(para) for para in raw.para],
         )
 
     def get_uto_ms_ark(self, layer_record: st.InscribedLayerMerged) -> list[st.Ark] | None:
@@ -100,6 +107,7 @@ class SinaiJsonImporter:
         layer_record = raw.convert(
             st.InscribedLayerMerged,
             text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            para=[self.get_para(para) for para in raw.para],
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
         )
 
@@ -123,7 +131,8 @@ class SinaiJsonImporter:
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
         return raw.convert(
             st.PartMerged,
-            layer=[self.get_layer(stub) for stub in raw.layer],
+            layer=[self.get_layer(layer) for layer in raw.layer],
+            para=[self.get_para(para) for para in raw.para],
         )
 
     def get_merged_manuscript(self, path: Path) -> st.ManuscriptObjectMerged:
@@ -134,6 +143,7 @@ class SinaiJsonImporter:
             part=[self.get_part(stub) for stub in raw.part],
             layer=[self.get_layer(stub) for stub in raw.layer],
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
+            para=[self.get_para(para) for para in raw.para],
         )
 
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
