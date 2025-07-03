@@ -5,7 +5,17 @@
 from datetime import date, datetime
 from enum import Enum
 import re
-from typing import Any, List, Optional, Annotated, Self, Set, TypeVar
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+    List,
+    Literal,
+    Optional,
+    Self,
+    Set,
+    TypeVar,
+)
 from uuid import UUID
 
 import dateutil.parser
@@ -19,6 +29,7 @@ from pydantic import (
     ConfigDict,
     model_validator,
 )
+from pydantic.main import IncEx
 
 
 SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
@@ -27,12 +38,71 @@ SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
 class BaseModel(PydanticBaseModel):
     model_config = ConfigDict(extra='forbid', frozen=True)
 
+    def model_dump(
+        self,
+        *,
+        mode: Literal['json', 'python'] | str = 'python',
+        include: IncEx | None = None,
+        exclude: IncEx | None = None,
+        context: Any | None = None,
+        by_alias: bool | None = None,
+        exclude_unset: bool = True,  # Overriding this
+        exclude_defaults: bool = True,  # Overriding this
+        exclude_none: bool = True,  # Overriding this
+        round_trip: bool = False,
+        warnings: (bool | Literal['none', 'warn', 'error']) = True,
+        fallback: Callable[[Any], Any] | None = None,
+        serialize_as_any: bool = False,
+    ) -> dict[str, Any]:
+        return super().model_dump(
+            mode=mode,
+            include=include,
+            exclude=exclude,
+            context=context,
+            by_alias=by_alias,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+            round_trip=round_trip,
+            warnings=warnings,
+            fallback=fallback,
+            serialize_as_any=serialize_as_any,
+        )
+
+    def model_dump_json(
+        self,
+        *,
+        indent: int | None = None,
+        include: IncEx | None = None,
+        exclude: IncEx | None = None,
+        context: Any | None = None,
+        by_alias: bool | None = None,
+        exclude_unset: bool = True,  # Overriding this
+        exclude_defaults: bool = True,  # Overriding this
+        exclude_none: bool = True,  # Overriding this
+        round_trip: bool = False,
+        warnings: (bool | Literal['none', 'warn', 'error']) = True,
+        fallback: Callable[[Any], Any] | None = None,
+        serialize_as_any: bool = False,
+    ) -> str:
+        return super().model_dump_json(
+            indent=indent,
+            include=include,
+            exclude=exclude,
+            context=context,
+            by_alias=by_alias,
+            exclude_unset=exclude_unset,
+            exclude_defaults=exclude_defaults,
+            exclude_none=exclude_none,
+            round_trip=round_trip,
+            warnings=warnings,
+            fallback=fallback,
+            serialize_as_any=serialize_as_any,
+        )
+
     # type: ignore
     def convert(self, cls: type[SiblingModel], **updated_data: Any) -> SiblingModel:
-        data = (
-            self.model_dump(exclude_unset=True, exclude_none=True, exclude_defaults=True)
-            | updated_data
-        )
+        data = self.model_dump() | updated_data
         return cls(**data)
 
     def deep_get(self, *names: str) -> set[Any]:
@@ -156,7 +226,7 @@ class BibItem(BaseModel):
     range: Optional[NonEmptyStr] = None
     alt_shelf: Optional[NonEmptyStr] = None
     url: Optional[NonEmptyStr] = None
-    note: Optional[List[str]] = None
+    note: List[str] = []
 
 
 class RelItem(BaseModel):
@@ -584,7 +654,6 @@ class ManuscriptLayerMerged(ManuscriptLayer):
 class UndertextManuscriptLayerMerged(ManuscriptLayer):
     layer_record: None = None
 
-    type: ControlledTerm = ControlledTerm(id='undertext', label='Undertext')
     uto_ms_ark: List[Ark] | None = None
 
     script: List[str] | None = None
@@ -814,7 +883,7 @@ class ManuscriptSolrRecord(PydanticBaseModel):
 
     @computed_field
     def manuscript_json_ss(self) -> str:
-        return self.ms_obj.model_dump_json(exclude_none=True)
+        return self.ms_obj.model_dump_json()
 
     # @computed_field
     # def descriptive_title_tesim(self) -> Set[str]:

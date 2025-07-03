@@ -21,7 +21,7 @@ def test_get_filename() -> None:
 def test_get_agent() -> None:
     result = IMPORTER.get_agent('ark:/21198/s1b59x')
     assert isinstance(result, st.Agent)
-    assert result.model_dump(exclude_none=True) == {
+    assert result.model_dump() == {
         'ark': 'ark:/21198/s1b59x',
         'type': {'id': 'person', 'label': 'Person'},
         'pref_name': 'Onuphrius',
@@ -119,7 +119,7 @@ class TestGetTextUnit:
         """
         )
         result = IMPORTER.get_text_unit(stub)
-        assert result.model_dump(exclude_none=True) == {
+        assert result.model_dump() == {
             'ark': 'ark:/21198/s1308n',
             'label': 'Liturgical collection',
             'lang': [{'id': 'nucl1302', 'label': 'Georgian'}],
@@ -164,7 +164,7 @@ class TestGetLayer:
             }
         """
         )
-        result = IMPORTER.get_layer(raw).model_dump(exclude_none=True, round_trip=True)
+        result = IMPORTER.get_layer(raw).model_dump()
 
         assert result == {
             'id': 'ark:/21198/ten0p1ol',
@@ -405,7 +405,7 @@ class TestGetMergedManuscript:
         assert test_ms_layer.id == 'ark:/21198/s1gh06'
         assert isinstance(test_ms_layer, st.UndertextManuscriptLayerMerged)
         assert test_ms_layer.model_dump().get('layer_record') is None
-        assert json.loads(result.model_dump_json(exclude_none=True)) == expected
+        assert json.loads(result.model_dump_json()) == expected
 
     @pytest.mark.xfail  # Don't seem to have good data here yet
     def test_loads_all_manuscripts(self) -> None:

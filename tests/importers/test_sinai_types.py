@@ -713,7 +713,11 @@ class TestManuscriptLayer:
 
     def test_good_UndertextManuscriptLayerMerged(self) -> None:
         st.UndertextManuscriptLayerMerged(
-            id='ark:/21198/123', label='Test Layer', script=['Tengwar'], lang=['Sindarin']
+            id='ark:/21198/123',
+            label='Test Layer',
+            script=['Tengwar'],
+            lang=['Sindarin'],
+            type=st.ControlledTerm(id='undertext', label='Undertext'),
         )
 
     def test_UndertextManuscriptLayerMerged_with_layer_record(self) -> None:
@@ -722,6 +726,7 @@ class TestManuscriptLayer:
                 id='ark:/21198/123',
                 label='Test Layer',
                 layer_record=Mock(st.InscribedLayerMerged),
+                type=st.ControlledTerm(id='undertext', label='Undertext'),
             )
 
     def test_UndertextManuscriptLayerMerged_wrong_type(self) -> None:

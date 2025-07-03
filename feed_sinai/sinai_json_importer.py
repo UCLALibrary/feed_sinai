@@ -153,10 +153,10 @@ class SinaiJsonImporter:
         for record in self.iterate_merged_records():
             (self.base_path / 'merged').mkdir(exist_ok=True)
             path = self.base_path / 'merged' / self.get_filename(record.ark)
-            path.write_text(record.model_dump_json(exclude_none=True))
+            path.write_text(record.model_dump_json())
 
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
-        return json.loads(st.ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json(exclude_none=True))
+        return json.loads(st.ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json())
 
     def load_to_solr(self) -> None:
         self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
