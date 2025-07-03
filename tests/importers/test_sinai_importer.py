@@ -25,7 +25,6 @@ def test_get_agent() -> None:
         'ark': 'ark:/21198/s1b59x',
         'type': {'id': 'person', 'label': 'Person'},
         'pref_name': 'Onuphrius',
-        'alt_name': [],
         'gender': {'id': 'man', 'label': 'Man'},
         'death': {
             'value': 'ca. 400 CE',
@@ -230,8 +229,6 @@ class TestGetLayer:
                                             'source': st.RelatedConceptSource.LoC,
                                         },
                                     ],
-                                    'refno': [],
-                                    'bib': [],
                                 },
                                 'locus': 'ff. 128r-130',
                             },
@@ -261,8 +258,6 @@ class TestGetLayer:
                                             'source': st.RelatedConceptSource.LoC,
                                         },
                                     ],
-                                    'refno': [],
-                                    'bib': [],
                                 },
                                 'locus': 'ff. 130v-135r',
                             },
@@ -285,8 +280,6 @@ class TestGetLayer:
                                             'source': st.RelatedConceptSource.VIAF,
                                         }
                                     ],
-                                    'refno': [],
-                                    'bib': [],
                                 },
                                 'locus': 'ff. 135r-140r',
                             },
@@ -318,13 +311,10 @@ class TestGetLayer:
                                             'source': st.RelatedConceptSource.LoC,
                                         },
                                     ],
-                                    'refno': [],
-                                    'bib': [],
                                 },
                                 'locus': 'ff. 140v-143v',
                             },
                         ],
-                        'features': [],
                         'note': [
                             {
                                 'type': {'id': 'contents', 'label': 'Contents Note'},

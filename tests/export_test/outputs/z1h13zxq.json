@@ -148,8 +148,7 @@
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "ff, 206–207",
           "script": ["Undetermined (Greek)"],
-          "lang": ["Greek"],
-          "orig_date": []
+          "lang": ["Greek"]
         }
       ]
     }

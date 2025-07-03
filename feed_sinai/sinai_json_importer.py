@@ -50,21 +50,15 @@ class SinaiJsonImporter:
 
         return raw.convert(
             st.ConceptualWorkMerged,
-            creator=(
-                [self.get_assoc_name_item(assoc_name) for assoc_name in raw.creator]
-                if raw.creator
-                else None
-            ),
+            creator=[self.get_assoc_name_item(assoc_name) for assoc_name in raw.creator],
         )
 
     def get_work_brief(self, raw: st.WorkBriefUnmerged) -> st.WorkBriefMerged:
         return raw.convert(
             st.WorkBriefMerged,
-            creator=(
-                [st.WorkBriefCreator(id=id, agent_record=self.get_agent(id)) for id in raw.creator]
-                if raw.creator
-                else None
-            ),
+            creator=[
+                st.WorkBriefCreator(id=id, agent_record=self.get_agent(id)) for id in raw.creator
+            ],
         )
 
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
@@ -94,7 +88,7 @@ class SinaiJsonImporter:
             )
             if parent_ms.type.id == 'uto':
                 result.append(parent_ark)
-        return result if len(result) else None
+        return result
 
     def get_layer(
         self, ms_layer: st.ManuscriptLayerUnmerged
@@ -106,6 +100,7 @@ class SinaiJsonImporter:
         layer_record = raw.convert(
             st.InscribedLayerMerged,
             text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
         )
 
         if ms_layer.type.id == 'undertext':
@@ -128,7 +123,7 @@ class SinaiJsonImporter:
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
         return raw.convert(
             st.PartMerged,
-            layer=[self.get_layer(stub) for stub in raw.layer] if raw.layer else None,
+            layer=[self.get_layer(stub) for stub in raw.layer],
         )
 
     def get_merged_manuscript(self, path: Path) -> st.ManuscriptObjectMerged:
@@ -136,8 +131,9 @@ class SinaiJsonImporter:
 
         return raw.convert(
             st.ManuscriptObjectMerged,
-            part=[self.get_part(stub) for stub in raw.part] if raw.part else None,
-            layer=[self.get_layer(stub) for stub in raw.layer] if raw.layer else None,
+            part=[self.get_part(stub) for stub in raw.part],
+            layer=[self.get_layer(stub) for stub in raw.layer],
+            assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
         )
 
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
