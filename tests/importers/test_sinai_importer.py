@@ -4,8 +4,8 @@ import json
 
 import pytest
 
-from feed_sinai.sinai_json_importer import SinaiJsonImporter
 import feed_sinai.sinai_types as st
+from feed_sinai.sinai_json_importer import SinaiJsonImporter
 from tests.importers import test_sinai_types
 
 # feed_sinai.mapper = importlib.import_module("feed_sinai.mapper.dlp")

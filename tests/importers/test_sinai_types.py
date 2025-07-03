@@ -1,10 +1,10 @@
 from datetime import date, datetime
 from pathlib import Path
-from typing import Optional, List
+from typing import List, Optional
 from unittest.mock import Mock
 
-from pydantic import ValidationError
 import pytest
+from pydantic import ValidationError
 
 import feed_sinai.sinai_types as st
 from feed_sinai.sinai_json_importer import SinaiJsonImporter

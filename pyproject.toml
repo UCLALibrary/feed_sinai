@@ -39,6 +39,9 @@ default-groups = [
     "test",
 ]
 
+[tool.ruff]
+select = ["I"]
+
 [tool.ruff.format]
 quote-style = "single"
 

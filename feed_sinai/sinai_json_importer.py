@@ -7,13 +7,13 @@ Output is pushed to a solr index suitable for use by https://github.com/UCLALibr
 """
 
 import json
+import logging
 from pathlib import Path
 from typing import Any, Iterator, Optional
 
 from pysolr import Solr  # type: ignore
 
 import feed_sinai.sinai_types as st
-import logging
 
 
 class SinaiJsonImporter:

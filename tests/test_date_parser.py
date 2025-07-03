@@ -5,6 +5,7 @@ Creates a multi-valued 'year_isim' field by parsing 'normalized_date'.
 """
 
 import datetime
+
 from feed_sinai import date_parser
 
 

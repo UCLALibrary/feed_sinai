@@ -2,9 +2,9 @@
 # pylint: disable=too-many-lines
 """Pydantic classes for the data model."""
 
+import re
 from datetime import date, datetime
 from enum import Enum
-import re
 from typing import (
     Annotated,
     Any,
@@ -19,18 +19,18 @@ from typing import (
 from uuid import UUID
 
 import dateutil.parser
-
 from pydantic import (
     AnyUrl,
-    BaseModel as PydanticBaseModel,
-    computed_field,
+    ConfigDict,
     Field,
     StringConstraints,
-    ConfigDict,
+    computed_field,
     model_validator,
 )
+from pydantic import (
+    BaseModel as PydanticBaseModel,
+)
 from pydantic.main import IncEx
-
 
 SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
 
