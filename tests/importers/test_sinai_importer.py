@@ -55,6 +55,33 @@ def test_get_agent() -> None:
     }
 
 
+class TestGetPlace:
+    @pytest.mark.parametrize(
+        ('ark', 'expected'),
+        (
+            (
+                'ark:/21198/pl1234',
+                {
+                    'ark': 'ark:/21198/pl1234',
+                    'pref_name': 'Nisibis',
+                    'alt_name': ['ܢܨܝܒܝܢ', 'Nusaybin', 'Ṣōbā'],
+                },
+            ),
+            ('ark:/21198/pl5678', {'ark': 'ark:/21198/pl5678', 'pref_name': 'Amid'}),
+        ),
+    )
+    def test_get_good_place(self, ark: str, expected: st.Place) -> None:
+        assert IMPORTER.get_place(ark).model_dump() == expected
+
+    def test_loads_all_places(self) -> None:
+        n_files = 0
+        for path in (IMPORTER.base_path / 'places').glob('*.json'):
+            IMPORTER.get_place('ark:/21198/' + path.stem)
+            n_files += 1
+
+        assert n_files == 2
+
+
 def test_get_assoc_name_item() -> None:
     unmerged = test_sinai_types.TestAssocNameItem.EPHREM.convert(st.AssocNameItemUnmerged)
     result = IMPORTER.get_assoc_name_item(unmerged)

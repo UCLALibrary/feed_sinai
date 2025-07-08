@@ -39,6 +39,15 @@ class SinaiJsonImporter:
         path = self.base_path / 'agents' / self.get_filename(ark)
         return st.Agent.model_validate_json(path.read_text())
 
+    def get_place(self, ark: str) -> st.Place:
+        path = self.base_path / 'places' / self.get_filename(ark)
+        return st.Place.model_validate_json(path.read_text())
+
+    def get_assoc_place_item(self, raw: st.AssocPlaceItemUnmerged) -> st.AssocPlaceItemMerged:
+        return raw.convert(
+            st.AssocPlaceItemMerged, place_record=self.get_place(raw.id) if raw.id else None
+        )
+
     def get_assoc_name_item(self, raw: st.AssocNameItemUnmerged) -> st.AssocNameItemMerged:
         return raw.convert(
             st.AssocNameItemMerged, agent_record=self.get_agent(raw.id) if raw.id else None

@@ -452,14 +452,32 @@ class ScriptItem(BaseModel):
     writing_system: str
 
 
+class Place(BaseModel):
+    ark: Ark
+    pref_name: NonEmptyStr
+    alt_name: List[NonEmptyStr] = []
+
+
 class AssocPlaceItem(BaseModel):
-    # id should be an ark, but it seems to be swapped with the "value" field so it's populated with names instead
-    # id: Optional[Ark] = None
-    id: Optional[NonEmptyStr] = None
+    id: Optional[Ark] = None
     value: Optional[NonEmptyStr] = None
     as_written: Optional[NonEmptyStr] = None
     event: ControlledTerm
     note: List[str] = []
+
+
+class AssocPlaceItemMerged(AssocPlaceItem):
+    pass
+
+
+class AssocPlaceItemUnmerged(AssocPlaceItem):
+    place_record: Place | None = None
+
+    @model_validator(mode='after')
+    def has_place_record_if_possible(self) -> Self:
+        if self.id and not self.place_record:
+            raise ValueError(f'{self} has id {self.id} but no place_record loaded')
+        return self
 
 
 class AssocDateItem(BaseModel):
