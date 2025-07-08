@@ -86,6 +86,37 @@ def test_get_work_brief() -> None:
     assert result.creator[0].agent_record.pref_name == 'Onuphrius'
 
 
+@pytest.mark.parametrize(
+    ('raw', 'pref_title'),
+    (
+        (
+            st.ContentsUnmerged(
+                label='1st Week: Saturday of <the week of> Rest',
+                work_id='ark:/21198/s1xs34',
+                locus='f. 4r',
+            ),
+            'Acts',
+        ),
+        (st.ContentsUnmerged(work_id='ark:/21198/s12g6d', locus='f. 5r, 6r'), '3 John'),
+        (
+            st.ContentsUnmerged(
+                label='3rd Week: Sunday, Saturday',
+                locus='f. 7v, 8v',
+                note=['Sub-heading: Joseph of Arimathea'],
+            ),
+            None,
+        ),
+    ),
+)
+def test_get_contents_item(raw: st.ContentsUnmerged, pref_title: str) -> None:
+    result = IMPORTER.get_contents_item(raw)
+    assert result.pref_title == pref_title
+    assert result.work_id == raw.work_id
+    assert result.label == raw.label
+    assert result.locus == raw.locus
+    assert result.note == raw.note
+
+
 class TestGetWorkWit:
     def test_get_work_wit_with_stub(self) -> None:
         raw = st.WorkWitItemUnmerged(

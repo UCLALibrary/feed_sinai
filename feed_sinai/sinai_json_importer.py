@@ -61,6 +61,14 @@ class SinaiJsonImporter:
             ],
         )
 
+    def get_contents_item(self, raw: st.ContentsUnmerged) -> st.ContentsMerged:
+        if not raw.work_id:
+            return raw.convert(st.ContentsMerged)
+
+        work_record = self.get_conceptual_work(stub=st.WorkStub(id=raw.work_id))
+
+        return raw.convert(st.ContentsMerged, pref_title=work_record.pref_title)
+
     def get_work_wit(self, raw: st.WorkWitItemUnmerged) -> st.WorkWitItemMerged:
         return raw.convert(
             st.WorkWitItemMerged,

@@ -414,6 +414,14 @@ class Contents(BaseModel):
         return self
 
 
+class ContentsUnmerged(Contents):
+    pass
+
+
+class ContentsMerged(Contents):
+    pref_title: Optional[NonEmptyStr] = None
+
+
 class WorkWitItem(BaseModel):
     work: WorkBrief | WorkStub | ConceptualWorkMerged
     alt_title: Optional[str] = Field(
@@ -423,17 +431,19 @@ class WorkWitItem(BaseModel):
     as_written: Optional[NonEmptyStr] = None
     locus: Optional[NonEmptyStr] = None
     excerpt: List[ExcerptItem] = []
-    contents: List[Contents] = []
+    contents: List[ContentsUnmerged] | List[ContentsMerged] = []
     note: List[str] = []
     bib: List[BibItem] = []
 
 
 class WorkWitItemUnmerged(WorkWitItem):
     work: WorkBriefUnmerged | WorkStub
+    contents: List[ContentsUnmerged] = []
 
 
 class WorkWitItemMerged(WorkWitItem):
     work: WorkBriefMerged | ConceptualWorkMerged
+    contents: List[ContentsMerged] = []
 
 
 class ScriptItem(BaseModel):

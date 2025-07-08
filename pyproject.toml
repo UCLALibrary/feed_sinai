@@ -39,7 +39,7 @@ default-groups = [
     "test",
 ]
 
-[tool.ruff]
+[tool.ruff.lint]
 select = ["I"]
 
 [tool.ruff.format]
