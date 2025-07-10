@@ -437,7 +437,7 @@ class TestLayoutItem:
 
 class TestUnitItem:
     def test_good_text_unit_item(self) -> None:
-        st.TextUnitStub.model_validate_json(
+        st.LayerTextUnit.model_validate_json(
             """
             {
                 "id": "ark:/21198/s1w103",

@@ -94,8 +94,8 @@ class SinaiJsonImporter:
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
         )
 
-    def get_text_unit(self, stub: st.TextUnitStub) -> st.TextUnit:
-        path = self.base_path / 'text_units' / self.get_filename(stub.id)
+    def get_text_unit(self, ark: st.Ark) -> st.TextUnitMerged:
+        path = self.base_path / 'text_units' / self.get_filename(ark)
         raw = st.TextUnitUnmerged.model_validate_json(path.read_text())
 
         return raw.convert(
@@ -103,6 +103,9 @@ class SinaiJsonImporter:
             work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
             para=[self.get_para(para) for para in raw.para],
         )
+
+    def get_layer_text_unit(self, raw: st.LayerTextUnitUnmerged) -> st.LayerTextUnitMerged:
+        return raw.convert(st.LayerTextUnitMerged, text_unit_record=self.get_text_unit(raw.id))
 
     def get_uto_ms_ark(self, layer_record: st.InscribedLayerMerged) -> st.Ark | None:
         arks: list[st.Ark] = []
@@ -131,7 +134,7 @@ class SinaiJsonImporter:
 
         layer_record = raw.convert(
             st.InscribedLayerMerged,
-            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            text_unit=[self.get_layer_text_unit(text_unit) for text_unit in raw.text_unit],
             para=[self.get_para(para) for para in raw.para],
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
         )
@@ -148,7 +151,7 @@ class SinaiJsonImporter:
 
         layer_record = raw.convert(
             st.InscribedLayerMerged,
-            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            text_unit=[self.get_layer_text_unit(text_unit) for text_unit in raw.text_unit],
             para=[self.get_para(para) for para in raw.para],
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
         )
@@ -161,7 +164,11 @@ class SinaiJsonImporter:
                 for writing_item in layer_record.writing
                 for script in writing_item.script
             ],
-            lang=[lang.label for text_unit in layer_record.text_unit for lang in text_unit.lang],
+            lang=[
+                lang.label
+                for text_unit in layer_record.text_unit
+                for lang in text_unit.text_unit_record.lang
+            ],
             orig_date=[date for date in layer_record.get_dates(date_type='origin')],
         )
 

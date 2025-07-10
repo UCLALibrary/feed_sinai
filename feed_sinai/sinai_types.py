@@ -590,10 +590,18 @@ class LayoutItem(BaseModel):
     note: List[str] = []
 
 
-class TextUnitStub(BaseModel):
+class LayerTextUnit(BaseModel):
     id: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     label: NonEmptyStr
     locus: Optional[NonEmptyStr] = None
+
+
+class LayerTextUnitUnmerged(LayerTextUnit):
+    pass
+
+
+class LayerTextUnitMerged(LayerTextUnit):
+    text_unit_record: TextUnitMerged
 
 
 class Ms(BaseModel):
@@ -623,7 +631,7 @@ class InscribedLayer(BaseModel):
     writing: List[WritingItem] = Field(..., min_length=1)
     ink: List[InkItem] = []
     layout: List[LayoutItem] = []
-    text_unit: List[TextUnitStub] | List[TextUnit] = Field(..., min_length=1)
+    text_unit: List[LayerTextUnitUnmerged] | List[LayerTextUnitMerged] = Field(..., min_length=1)
     para: List[ParaItemUnmerged] | List[ParaItemMerged] = []
     assoc_date: List[AssocDateItem] = []
     assoc_name: List[AssocNameItemUnmerged] | List[AssocNameItemMerged] = []
@@ -640,13 +648,13 @@ class InscribedLayer(BaseModel):
 
 
 class InscribedLayerUnmerged(InscribedLayer):
-    text_unit: List[TextUnitStub] = Field(..., min_length=1)
+    text_unit: List[LayerTextUnitUnmerged] = Field(..., min_length=1)
     para: List[ParaItemUnmerged] = []
     assoc_name: List[AssocNameItemUnmerged] = []
 
 
 class InscribedLayerMerged(InscribedLayer):
-    text_unit: List[TextUnit] = Field(..., min_length=1)
+    text_unit: List[LayerTextUnitMerged] = Field(..., min_length=1)
     para: List[ParaItemMerged] = []
     assoc_name: List[AssocNameItemMerged] = []
 
