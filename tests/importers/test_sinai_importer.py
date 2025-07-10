@@ -1,6 +1,7 @@
 # pylint: disable=no-self-use
 
 import json
+from unittest.mock import Mock
 
 import pytest
 
@@ -184,6 +185,26 @@ class TestGetWorkWit:
             'work_id': 'ark:/21198/s1xs34',
             'locus': 'f. 4r',
         }
+
+
+def test_get_para() -> None:
+    ct = st.ControlledTerm(id='x', label='X')
+
+    raw = st.ParaItemUnmerged(
+        type=ct,
+        locus='abc',
+        lang=[ct],
+        assoc_name=[st.AssocNameItemUnmerged(id='ark:/21198/s1c304', role=ct)],
+        assoc_place=[st.AssocPlaceItemUnmerged(id='ark:/21198/pl1234', event=ct)],
+    )
+
+    result = IMPORTER.get_para(raw)
+
+    assert result.assoc_name[0].agent_record
+    assert result.assoc_name[0].agent_record.pref_name == 'Mar Saba'
+
+    assert result.assoc_place[0].place_record
+    assert result.assoc_place[0].place_record.pref_name == 'Nisibis'
 
 
 class TestGetTextUnit:

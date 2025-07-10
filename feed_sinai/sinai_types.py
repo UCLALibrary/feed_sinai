@@ -466,11 +466,11 @@ class AssocPlaceItem(BaseModel):
     note: List[str] = []
 
 
-class AssocPlaceItemMerged(AssocPlaceItem):
+class AssocPlaceItemUnmerged(AssocPlaceItem):
     pass
 
 
-class AssocPlaceItemUnmerged(AssocPlaceItem):
+class AssocPlaceItemMerged(AssocPlaceItem):
     place_record: Place | None = None
 
     @model_validator(mode='after')
@@ -497,17 +497,19 @@ class ParaItem(BaseModel):
     as_written: Optional[NonEmptyStr] = None
     translation: List[str] = []
     assoc_name: List[AssocNameItemUnmerged] | List[AssocNameItemMerged] = []
-    assoc_place: List[AssocPlaceItem] = []
+    assoc_place: List[AssocPlaceItemUnmerged] | List[AssocPlaceItemMerged] = []
     assoc_date: List[AssocDateItem] = []
     note: List[str] = []
 
 
 class ParaItemUnmerged(ParaItem):
     assoc_name: List[AssocNameItemUnmerged] = []
+    assoc_place: List[AssocPlaceItemUnmerged] = []
 
 
 class ParaItemMerged(ParaItem):
     assoc_name: List[AssocNameItemMerged] = []
+    assoc_place: List[AssocPlaceItemMerged] = []
 
 
 class NoteItem(BaseModel):
@@ -635,7 +637,7 @@ class InscribedLayer(BaseModel):
     para: List[ParaItemUnmerged] | List[ParaItemMerged] = []
     assoc_date: List[AssocDateItem] = []
     assoc_name: List[AssocNameItemUnmerged] | List[AssocNameItemMerged] = []
-    assoc_place: List[AssocPlaceItem] = []
+    assoc_place: List[AssocPlaceItemUnmerged] | List[AssocPlaceItemMerged] = []
     features: List[ControlledTerm] = []
     related_mss: List[RelatedMs] = []
     note: List[NoteItem] = []
@@ -651,12 +653,14 @@ class InscribedLayerUnmerged(InscribedLayer):
     text_unit: List[LayerTextUnitUnmerged] = Field(..., min_length=1)
     para: List[ParaItemUnmerged] = []
     assoc_name: List[AssocNameItemUnmerged] = []
+    assoc_place: List[AssocPlaceItemUnmerged] = []
 
 
 class InscribedLayerMerged(InscribedLayer):
     text_unit: List[LayerTextUnitMerged] = Field(..., min_length=1)
     para: List[ParaItemMerged] = []
     assoc_name: List[AssocNameItemMerged] = []
+    assoc_place: List[AssocPlaceItemMerged] = []
 
     def get_dates(self, date_type: str | None = None) -> List[AssocDateItem]:
         return [
@@ -869,7 +873,7 @@ class ManuscriptObject(BaseModel):
     location: List[LocationItem]
     assoc_date: List[AssocDateItem] = []
     assoc_name: List[AssocNameItemMerged] | List[AssocNameItemUnmerged] = []
-    assoc_place: List[AssocPlaceItem] = []
+    assoc_place: List[AssocPlaceItemUnmerged] | List[AssocPlaceItemMerged] = []
     note: List[NoteItem] = []
     related_mss: List[RelatedMs] = []
     viscodex: List[ViscodexItem] = []
@@ -894,6 +898,7 @@ class ManuscriptObject(BaseModel):
 class ManuscriptObjectUnmerged(ManuscriptObject):
     part: List[PartUnmerged]
     assoc_name: List[AssocNameItemUnmerged] = []
+    assoc_place: List[AssocPlaceItemUnmerged] = []
     para: List[ParaItemUnmerged] = []
 
 
@@ -906,6 +911,8 @@ class ManuscriptObjectMerged(ManuscriptObject):
     uto: List[UndertextManuscriptLayerMerged] = []
 
     assoc_name: List[AssocNameItemMerged] = []
+    assoc_place: List[AssocPlaceItemMerged] = []
+
     para: List[ParaItemMerged] = []
 
 

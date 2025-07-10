@@ -93,6 +93,7 @@ class SinaiJsonImporter:
         return raw.convert(
             st.ParaItemMerged,
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
+            assoc_place=[self.get_assoc_place_item(place) for place in raw.assoc_place],
         )
 
     def get_text_unit(self, ark: st.Ark) -> st.TextUnitMerged:
@@ -138,6 +139,7 @@ class SinaiJsonImporter:
             text_unit=[self.get_layer_text_unit(text_unit) for text_unit in raw.text_unit],
             para=[self.get_para(para) for para in raw.para],
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
+            assoc_place=[self.get_assoc_place_item(place) for place in raw.assoc_place],
         )
 
         return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
@@ -194,6 +196,7 @@ class SinaiJsonImporter:
             guest_layer=[self.get_layer(layer) for layer in raw.layer if layer.type.id == 'guest'],
             uto=[self.get_uto(layer) for layer in raw.layer if layer.type.id == 'undertext'],
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
+            assoc_place=[self.get_assoc_place_item(place) for place in raw.assoc_place],
             para=[self.get_para(para) for para in raw.para],
         )
 
