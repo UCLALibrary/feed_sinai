@@ -164,6 +164,27 @@ class TestGetWorkWit:
         assert result.work.creator and isinstance(result.work.creator[0].agent_record, st.Agent)
         assert result.work.creator[0].agent_record.pref_name == 'Onuphrius'
 
+    def test_gets_contents_item(self) -> None:
+        raw = st.WorkWitItemUnmerged(
+            work=st.WorkBriefUnmerged(desc_title='Test Work', creator=['ark:/21198/s1b59x']),
+            contents=[
+                st.ContentsUnmerged(
+                    label='1st Week: Saturday of <the week of> Rest',
+                    work_id='ark:/21198/s1xs34',
+                    locus='f. 4r',
+                )
+            ],
+        )
+
+        result = IMPORTER.get_work_wit(raw)
+
+        assert result.contents[0].model_dump() == {
+            'pref_title': 'Acts',
+            'label': '1st Week: Saturday of <the week of> Rest',
+            'work_id': 'ark:/21198/s1xs34',
+            'locus': 'f. 4r',
+        }
+
 
 class TestGetTextUnit:
     def test_good_text_unit(self) -> None:

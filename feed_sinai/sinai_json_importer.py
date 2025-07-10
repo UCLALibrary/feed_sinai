@@ -86,6 +86,7 @@ class SinaiJsonImporter:
                 if isinstance(raw.work, st.WorkBrief)
                 else self.get_conceptual_work(raw.work)
             ),
+            contents=[self.get_contents_item(raw_item) for raw_item in raw.contents],
         )
 
     def get_para(self, raw: st.ParaItemUnmerged) -> st.ParaItemMerged:
