@@ -104,21 +104,29 @@ class SinaiJsonImporter:
             para=[self.get_para(para) for para in raw.para],
         )
 
-    def get_uto_ms_ark(self, layer_record: st.InscribedLayerMerged) -> list[st.Ark] | None:
-        result = []
+    def get_uto_ms_ark(self, layer_record: st.InscribedLayerMerged) -> st.Ark | None:
+        arks: list[st.Ark] = []
         for parent_ark in layer_record.parent:
             parent_ms = st.ManuscriptObjectUnmerged.model_validate_json(
                 (self.base_path / 'ms_objs' / self.get_filename(parent_ark)).read_text()
             )
             if parent_ms.type.id == 'uto':
-                result.append(parent_ark)
-        return result
+                arks.append(parent_ark)
 
-    def get_layer(
-        self, ms_layer: st.ManuscriptLayerUnmerged
-    ) -> st.ManuscriptLayerMerged | st.UndertextManuscriptLayerMerged:
+        if len(arks) == 0:
+            return None
+
+        if len(arks) > 1:
+            logging.warning(
+                f'Multiple values found for `uto_ms_ark` in {layer_record}, using the first and discarding the rest'
+            )
+
+        return arks[0]
+
+    def get_layer(self, ms_layer: st.ManuscriptLayerUnmerged) -> st.ManuscriptLayerMerged:
+        assert ms_layer.type.id != 'undertext'
+
         layer_record_path = self.base_path / 'layers' / self.get_filename(ms_layer.id)
-
         raw = st.InscribedLayerUnmerged.model_validate_json(layer_record_path.read_text())
 
         layer_record = raw.convert(
@@ -128,27 +136,42 @@ class SinaiJsonImporter:
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
         )
 
-        if ms_layer.type.id == 'undertext':
-            return ms_layer.convert(
-                st.UndertextManuscriptLayerMerged,
-                uto_ms_ark=self.get_uto_ms_ark(layer_record),
-                script=[
-                    script.label
-                    for writing_item in layer_record.writing
-                    for script in writing_item.script
-                ],
-                lang=[
-                    lang.label for text_unit in layer_record.text_unit for lang in text_unit.lang
-                ],
-                orig_date=[date for date in layer_record.get_dates(date_type='origin')],
-            )
-        else:
-            return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
+        return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
+
+    def get_uto(
+        self, ms_layer: st.ManuscriptLayerUnmerged
+    ) -> st.ManuscriptLayerMerged | st.UndertextManuscriptLayerMerged:
+        assert ms_layer.type.id == 'undertext'
+
+        layer_record_path = self.base_path / 'layers' / self.get_filename(ms_layer.id)
+        raw = st.InscribedLayerUnmerged.model_validate_json(layer_record_path.read_text())
+
+        layer_record = raw.convert(
+            st.InscribedLayerMerged,
+            text_unit=[self.get_text_unit(text_unit) for text_unit in raw.text_unit],
+            para=[self.get_para(para) for para in raw.para],
+            assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
+        )
+
+        return ms_layer.convert(
+            st.UndertextManuscriptLayerMerged,
+            uto_ms_ark=self.get_uto_ms_ark(layer_record),
+            script=[
+                script.label
+                for writing_item in layer_record.writing
+                for script in writing_item.script
+            ],
+            lang=[lang.label for text_unit in layer_record.text_unit for lang in text_unit.lang],
+            orig_date=[date for date in layer_record.get_dates(date_type='origin')],
+        )
 
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
         return raw.convert(
             st.PartMerged,
-            layer=[self.get_layer(layer) for layer in raw.layer],
+            layer=[],
+            ot_layer=[self.get_layer(layer) for layer in raw.layer if layer.type.id == 'overtext'],
+            guest_layer=[self.get_layer(layer) for layer in raw.layer if layer.type.id == 'guest'],
+            uto=[self.get_uto(layer) for layer in raw.layer if layer.type.id == 'undertext'],
             para=[self.get_para(para) for para in raw.para],
         )
 
@@ -158,7 +181,10 @@ class SinaiJsonImporter:
         return raw.convert(
             st.ManuscriptObjectMerged,
             part=[self.get_part(stub) for stub in raw.part],
-            layer=[self.get_layer(stub) for stub in raw.layer],
+            layer=[],
+            ot_layer=[self.get_layer(layer) for layer in raw.layer if layer.type.id == 'overtext'],
+            guest_layer=[self.get_layer(layer) for layer in raw.layer if layer.type.id == 'guest'],
+            uto=[self.get_uto(layer) for layer in raw.layer if layer.type.id == 'undertext'],
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
             para=[self.get_para(para) for para in raw.para],
         )

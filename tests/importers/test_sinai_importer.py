@@ -457,7 +457,7 @@ class TestGetMergedManuscript:
 
         result = IMPORTER.get_merged_manuscript(IMPORTER.base_path / 'ms_objs/z1h13zxq.json')
 
-        test_ms_layer = result.part[0].layer[1]
+        test_ms_layer = result.part[0].uto[0]
         assert test_ms_layer.id == 'ark:/21198/s1gh06'
         assert isinstance(test_ms_layer, st.UndertextManuscriptLayerMerged)
         assert test_ms_layer.model_dump().get('layer_record') is None

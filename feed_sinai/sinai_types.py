@@ -45,7 +45,7 @@ class BaseModel(PydanticBaseModel):
         include: IncEx | None = None,
         exclude: IncEx | None = None,
         context: Any | None = None,
-        by_alias: bool | None = None,
+        by_alias: bool | None = True,  # Overriding this
         exclude_unset: bool = True,  # Overriding this
         exclude_defaults: bool = True,  # Overriding this
         exclude_none: bool = True,  # Overriding this
@@ -76,7 +76,7 @@ class BaseModel(PydanticBaseModel):
         include: IncEx | None = None,
         exclude: IncEx | None = None,
         context: Any | None = None,
-        by_alias: bool | None = None,
+        by_alias: bool | None = True,  # Overriding this
         exclude_unset: bool = True,  # Overriding this
         exclude_defaults: bool = True,  # Overriding this
         exclude_none: bool = True,  # Overriding this
@@ -695,9 +695,11 @@ class ManuscriptLayerMerged(ManuscriptLayer):
 
 
 class UndertextManuscriptLayerMerged(ManuscriptLayer):
+    id: Ark = Field(..., serialization_alias='uto_layer_ark')
+
     layer_record: None = None
 
-    uto_ms_ark: List[Ark] = []
+    uto_ms_ark: Optional[Ark] = None
 
     script: List[str] = []
     lang: List[str] = []
@@ -723,21 +725,21 @@ class Part(BaseModel):
         None,
         description="A string expression of an object's dimensions, whether manuscript block, folio, or writing area",
     )
-    layer: (
-        List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]
-    ) = Field(..., min_length=1)
+    layer: List[ManuscriptLayerUnmerged] = Field(..., min_length=1)
     para: List[ParaItemUnmerged] | List[ParaItemMerged] = []
     note: List[NoteItem] = []
     related_mss: List[RelatedMs] = []
 
 
 class PartUnmerged(Part):
-    layer: List[ManuscriptLayerUnmerged] = Field(..., min_length=1)
     para: List[ParaItemUnmerged] = []
 
 
 class PartMerged(Part):
-    layer: List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged] = Field(..., min_length=1)
+    layer: List[ManuscriptLayerUnmerged] = Field(..., max_length=0, exclude=True)
+    ot_layer: List[ManuscriptLayerMerged] = Field(..., min_length=1)
+    guest_layer: List[ManuscriptLayerMerged] = []
+    uto: List[UndertextManuscriptLayerMerged] = []
     para: List[ParaItemMerged] = []
 
 
@@ -854,9 +856,7 @@ class ManuscriptObject(BaseModel):
     )
     features: List[ControlledTerm] = []
     part: List[Part] | List[PartUnmerged] | List[PartMerged] = Field(..., min_length=1)
-    layer: (
-        List[ManuscriptLayerUnmerged] | List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]
-    ) = []
+    layer: List[ManuscriptLayerUnmerged] = []
     para: List[ParaItemUnmerged] | List[ParaItemMerged] = []
     location: List[LocationItem]
     assoc_date: List[AssocDateItem] = []
@@ -885,30 +885,20 @@ class ManuscriptObject(BaseModel):
 
 class ManuscriptObjectUnmerged(ManuscriptObject):
     part: List[PartUnmerged]
-    layer: List[ManuscriptLayerUnmerged] = []
     assoc_name: List[AssocNameItemUnmerged] = []
     para: List[ParaItemUnmerged] = []
 
 
 class ManuscriptObjectMerged(ManuscriptObject):
     part: List[PartMerged]
-    layer: List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged] = []
+
+    layer: List[ManuscriptLayerUnmerged] = Field([], max_length=0, exclude=True)
+    ot_layer: List[ManuscriptLayerMerged] = []
+    guest_layer: List[ManuscriptLayerMerged] = []
+    uto: List[UndertextManuscriptLayerMerged] = []
+
     assoc_name: List[AssocNameItemMerged] = []
     para: List[ParaItemMerged] = []
-
-    def get_layers(
-        self, layer_type: str | None = None
-    ) -> List[ManuscriptLayerMerged | UndertextManuscriptLayerMerged]:
-        return [
-            layer
-            for part in self.part
-            for layer in part.layer
-            if layer_type is None or layer.type.id == layer_type
-        ] + [
-            layer
-            for layer in (self.layer or [])
-            if layer_type is None or layer.type.id == layer_type
-        ]
 
 
 class ManuscriptSolrRecord(PydanticBaseModel):
@@ -952,7 +942,13 @@ class ManuscriptSolrRecord(PydanticBaseModel):
     def year_isim(self) -> Set[int]:
         return {
             year
-            for layer in self.ms_obj.get_layers(layer_type='overtext')
+            for layer in self.ms_obj.ot_layer
+            for date in layer.get_dates(date_type='origin')
+            for year in (date.iso.get_years() if date.iso else [])
+        } | {
+            year
+            for part in self.ms_obj.part
+            for layer in part.ot_layer
             for date in layer.get_dates(date_type='origin')
             for year in (date.iso.get_years() if date.iso else [])
         }

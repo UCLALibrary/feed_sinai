@@ -712,13 +712,20 @@ class TestManuscriptLayer:
         )
 
     def test_good_UndertextManuscriptLayerMerged(self) -> None:
-        st.UndertextManuscriptLayerMerged(
+        result = st.UndertextManuscriptLayerMerged(
             id='ark:/21198/123',
             label='Test Layer',
             script=['Tengwar'],
             lang=['Sindarin'],
             type=st.ControlledTerm(id='undertext', label='Undertext'),
-        )
+        ).model_dump()
+        assert result == {
+            'uto_layer_ark': 'ark:/21198/123',
+            'label': 'Test Layer',
+            'script': ['Tengwar'],
+            'lang': ['Sindarin'],
+            'type': {'id': 'undertext', 'label': 'Undertext'},
+        }
 
     def test_UndertextManuscriptLayerMerged_with_layer_record(self) -> None:
         with pytest.raises(ValidationError, match=r'layer_record\s+Input should be None'):

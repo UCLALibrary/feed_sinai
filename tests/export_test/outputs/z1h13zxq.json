@@ -19,7 +19,7 @@
         { "id": "paper", "label": "Paper" }
       ],
       "dim": "180 x 142 mm (representative folio)",
-      "layer": [
+      "ot_layer": [
         {
           "id": "ark:/21198/s18d1p",
           "label": "Overtext Layer",
@@ -81,9 +81,11 @@
             ],
             "parent": ["ark:/21198/z1h13zxq"]
           }
-        },
+        }
+      ],
+      "uto": [
         {
-          "id": "ark:/21198/s1gh06",
+          "uto_layer_ark": "ark:/21198/s1gh06",
           "label": "Georgian Undertext: Iadgari, Assumption",
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "ff. 144–145, 204–205, 208–209, rear pastedown, 140–141",
@@ -98,7 +100,7 @@
           ]
         },
         {
-          "id": "ark:/21198/s1bp7b",
+          "uto_layer_ark": "ark:/21198/s1bp7b",
           "label": "Georgian Undertext: Heirmologion",
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "ff. 123v, 138r",
@@ -113,7 +115,7 @@
           ]
         },
         {
-          "id": "ark:/21198/s1705r",
+          "uto_layer_ark": "ark:/21198/s1705r",
           "label": "Georgian Undertext: Unidentified text",
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "rear pastedown",
@@ -128,7 +130,7 @@
           ]
         },
         {
-          "id": "ark:/21198/s1362f",
+          "uto_layer_ark": "ark:/21198/s1362f",
           "label": "Georgian Undertext: Hymns",
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "ff. 130–131, 143, 146",
@@ -143,7 +145,7 @@
           ]
         },
         {
-          "id": "ark:/21198/s1zh1x",
+          "uto_layer_ark": "ark:/21198/s1zh1x",
           "label": "Greek Undertext: Unidentified text",
           "type": { "id": "undertext", "label": "Undertext" },
           "locus": "ff, 206–207",
