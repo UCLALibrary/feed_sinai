@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from pathlib import Path
-from typing import List, Optional
+from typing import Hashable, List, Optional
 from unittest.mock import Mock
 
 import pytest
@@ -13,7 +13,7 @@ IMPORTER = SinaiJsonImporter(base_path='tests/export_test')
 
 
 class ExampleModel(st.BaseModel):
-    children: 'List[ExampleModel]' = []
+    children: 'tuple[ExampleModel, ...]' = tuple()
     a: Optional[int] = None
     b: Optional[int] = None
     c: Optional[str] = None
@@ -21,24 +21,60 @@ class ExampleModel(st.BaseModel):
 
 class TestBaseModel:
     def test_convert(self) -> None:
-        first = ExampleModel(a=1, b=2)
-        second = first.convert(ExampleModel, b=3)
-        assert second == ExampleModel(a=1, b=3)
+        class A(st.BaseModel):
+            a: int
 
-    def test_deep_get(self) -> None:
-        test_obj = ExampleModel.model_validate(
-            {
-                'a': 1,
-                'b': 1,
-                'children': [
-                    {'a': 2, 'b': 3, 'children': [{'a': 5, 'b': 8}]},
-                    {'a': 13, 'b': 21},
-                    {'children': [{'b': 55, 'c': 'no'}], 'b': 34, 'c': 'nope'},
-                ],
-            }
-        )
+        class B(A):
+            b: int
 
-        assert test_obj.deep_get('a', 'b') == {1, 2, 3, 5, 8, 13, 21, 34, 55}
+        first = A(a=1)
+        second = first.convert(B, b=2)
+        assert second == B(a=1, b=2)
+
+    class TestDeepGet:
+        @pytest.fixture
+        def obj(self) -> st.Date:
+            return st.Date(value='sometime', iso=st.Iso(not_before=-14000000000, not_after=2025))
+
+        def test_gets_by_type(self, obj: st.Date) -> None:
+            assert obj.deep_get(cls=str) == {'sometime'}
+
+        def test_gets_by_type_from_children(self, obj: st.Date) -> None:
+            assert obj.deep_get(cls=int) == {-14000000000, 2025}
+
+        def test_gets_by_name(self, obj: st.Date) -> None:
+            assert obj.deep_get('not_after', cls=int) == {2025}
+
+        def test_ignores_by_name(self, obj: st.Date) -> None:
+            assert obj.deep_get(cls=int, exclude=['not_before']) == {2025}
+
+        def test_gets_submodels(self, obj: st.Date) -> None:
+            assert obj.deep_get(cls=st.Iso) == {obj.iso}
+
+        def test_gets_assoc_name_item(self) -> None:
+            name = TestAssocNameItem.EPHREM.convert(st.AssocNameItemUnmerged)
+            para = st.ParaItemUnmerged(
+                type=st.ControlledTerm(id='t', label='T'),
+                locus='locus',
+                lang=[st.ControlledTerm(id='l', label='L')],
+                assoc_name=[name],
+            )
+            assert para.deep_get(cls=st.AssocNameItemUnmerged) == {name}
+
+        def test_fib(self) -> None:
+            test_obj = ExampleModel.model_validate(
+                {
+                    'a': 1,
+                    'b': 1,
+                    'children': [
+                        {'a': 2, 'b': 3, 'children': [{'a': 5, 'b': 8}]},
+                        {'a': 13, 'b': 21},
+                        {'children': [{'b': 55, 'c': 'no'}], 'b': 34, 'c': 'nope'},
+                    ],
+                }
+            )
+
+            assert test_obj.deep_get('a', 'b', cls=int) == {1, 2, 3, 5, 8, 13, 21, 34, 55}
 
 
 class TestControlledTerm:
@@ -48,6 +84,10 @@ class TestControlledTerm:
     def test_happy_path(self) -> None:
         result = st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}')
         assert result == self.CONTROLLED_TERM
+
+    def test_hashable(self) -> None:
+        result = st.ControlledTerm.model_validate_json('{"id": "abc", "label": "123"}')
+        assert isinstance(result, Hashable)
 
     def test_extra_field(self) -> None:
         with pytest.raises(ValidationError):
@@ -117,6 +157,10 @@ class TestIso:
             st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}').model_dump()
             == self.ISO
         )
+
+    def test_hashable(self) -> None:
+        result = st.Iso(not_before=10, not_after=100)
+        assert isinstance(result, Hashable)
 
     def test_no_notafter(self) -> None:
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
@@ -190,9 +234,9 @@ class TestRefnoItem:
 
 
 class TestBibItem:
-    def test_good_json(self) -> None:
-        result = st.BibItem.model_validate_json(
-            """
+    @pytest.fixture
+    def json(self) -> str:
+        return """
             {
                 "id": "deb668b6-feec-4828-8749-a97441881226",
                 "type": {
@@ -204,8 +248,14 @@ class TestBibItem:
                 "range": "[141], p. 156"
             }
         """
-        )
+
+    def test_good_json(self, json: str) -> None:
+        result = st.BibItem.model_validate_json(json)
         assert result.type.id == 'ref'
+
+    def test_hashable(self, json: str) -> None:
+        result = st.BibItem.model_validate_json(json)
+        assert hash(result)
 
 
 # @pytest.mark.xfail
@@ -475,6 +525,10 @@ class TestAssocNameItem:
             == self.EPHREM
         )
 
+    def test_hashable(self) -> None:
+        assert isinstance(self.EPHREM, Hashable)
+        hash(self.EPHREM)
+
     def test_good_TestAssocNameItemMerged(self) -> None:
         result = self.EPHREM.convert(st.AssocNameItemMerged, agent_record=TestAgent.EPHREM)
         assert result.agent_record == TestAgent.EPHREM
@@ -722,8 +776,8 @@ class TestManuscriptLayer:
         assert result == {
             'uto_layer_ark': 'ark:/21198/123',
             'label': 'Test Layer',
-            'script': ['Tengwar'],
-            'lang': ['Sindarin'],
+            'script': ('Tengwar',),
+            'lang': ('Sindarin',),
             'type': {'id': 'undertext', 'label': 'Undertext'},
         }
 
@@ -1092,16 +1146,3 @@ class TestConceptualWorkUnmerged:
             }
         """
         )
-
-
-class TestManuscriptSolrRecord:
-    def test_good_record(self) -> None:
-        result = st.ManuscriptSolrRecord(
-            ms_obj=IMPORTER.get_merged_manuscript(Path('tests/export_test/ms_objs/te5f0f9b.json'))
-        )
-
-        assert result.year_isim == {
-            *range(601, 700),
-            700,  # range is INCLUSIVE of 700
-            1292,
-        }

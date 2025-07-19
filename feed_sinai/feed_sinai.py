@@ -29,7 +29,9 @@ def export(base_path: str) -> None:
 
 
 @sinai.command('load')
-@click.argument('base_path', nargs=1, type=click.Path(exists=True, dir_okay=True, file_okay=False))
+@click.argument(
+    'base_path', nargs=1, default='.', type=click.Path(exists=True, dir_okay=True, file_okay=False)
+)
 @click.argument(
     'solr_url',
     nargs=1,
@@ -39,6 +41,15 @@ def export(base_path: str) -> None:
 def load(base_path: str, solr_url: str) -> None:
     importer = SinaiJsonImporter(base_path=base_path, solr_url=solr_url)
     importer.load_to_solr()
+
+
+@sinai.command('save_solr_records')
+@click.argument(
+    'base_path', nargs=1, default='.', type=click.Path(exists=True, dir_okay=True, file_okay=False)
+)
+def save_solr_records(base_path: str) -> None:
+    importer = SinaiJsonImporter(base_path=base_path)
+    importer.save_solr_records()
 
 
 if __name__ == '__main__':

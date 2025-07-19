@@ -14,6 +14,7 @@ from typing import Any, Iterator, Optional
 from pysolr import Solr  # type: ignore
 
 import feed_sinai.sinai_types as st
+from feed_sinai.solr_record import ManuscriptSolrRecord
 
 
 class SinaiJsonImporter:
@@ -210,13 +211,19 @@ class SinaiJsonImporter:
                 logging.warning(f'Could not merge {path}: {e}')
 
     def save_merged_records(self) -> None:
+        (self.base_path / 'merged').mkdir(exist_ok=True)
         for record in self.iterate_merged_records():
-            (self.base_path / 'merged').mkdir(exist_ok=True)
             path = self.base_path / 'merged' / self.get_filename(record.ark)
             path.write_text(record.model_dump_json(indent=2))
 
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
-        return json.loads(st.ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json())
+        return json.loads(ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json())
 
     def load_to_solr(self) -> None:
         self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
+
+    def save_solr_records(self) -> None:
+        (self.base_path / 'solr').mkdir(exist_ok=True)
+        for record in self.iterate_merged_records():
+            path = self.base_path / 'solr' / self.get_filename(record.ark)
+            path.write_text(ManuscriptSolrRecord(ms_obj=record).model_dump_json(indent=2))
