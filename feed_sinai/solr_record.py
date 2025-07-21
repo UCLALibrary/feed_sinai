@@ -54,10 +54,6 @@ class ManuscriptSolrRecord(st.BaseModel):
             for year in (date.iso.get_years() if date.iso else [])
         }
 
-    @computed_field
-    def manuscript_json_ss(self) -> str:
-        return self.ms_obj.model_dump_json()
-
     #
     #   Facets (Main / any)
     #
@@ -723,3 +719,7 @@ class ManuscriptSolrRecord(st.BaseModel):
                 *agent.alt_name,
             ]
         }
+
+    @computed_field
+    def manuscript_json_ss(self) -> str:
+        return self.ms_obj.model_dump_json()
