@@ -32,8 +32,8 @@ def test_id(result: ManuscriptSolrRecord) -> None:
     assert result.id == 'ark:/21198/te5f0f9b'
 
 
-def test_ark(result: ManuscriptSolrRecord) -> None:
-    assert result.ark == 'ark:/21198/te5f0f9b'
+def test_ark_ssi(result: ManuscriptSolrRecord) -> None:
+    assert result.ark_ssi == 'ark:/21198/te5f0f9b'
 
 
 def test_has_model_ssim(result: ManuscriptSolrRecord) -> None:
@@ -42,14 +42,6 @@ def test_has_model_ssim(result: ManuscriptSolrRecord) -> None:
 
 def test_visibility_ssi(result: ManuscriptSolrRecord) -> None:
     assert result.visibility_ssi == 'open'
-
-
-def test_year_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.year_isim == {
-        *range(601, 700),
-        700,  # range is INCLUSIVE of 700
-        1292,
-    }
 
 
 def test_manuscript_json_ss(result: ManuscriptSolrRecord) -> None:
@@ -109,7 +101,11 @@ def test_ot_genre_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_ot_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.ot_date_isim
+    assert result.ot_date_isim == {
+        *range(601, 700),
+        700,  # range is INCLUSIVE of 700
+        1292,
+    }
 
 
 def test_ot_language_ssim(result: ManuscriptSolrRecord) -> None:
@@ -118,10 +114,6 @@ def test_ot_language_ssim(result: ManuscriptSolrRecord) -> None:
 
 def test_ot_works_ssim(result: ManuscriptSolrRecord) -> None:
     assert result.ot_works_ssim
-
-
-def test_ot_names_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.ot_names_ssim
 
 
 def test_para_script_ssim(result: ManuscriptSolrRecord) -> None:
@@ -149,11 +141,12 @@ def test_para_works_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_para_names_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_names_ssim == set()
+    assert result.para_names_ssim == {'Ephrem'}
 
 
 def test_para_type_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_type_ssim
+    # TODO: this is currently empty bc we don't have subtype in the data yet
+    assert result.para_type_ssim == set()
 
 
 def test_uto_script_ssim(result: ManuscriptSolrRecord) -> None:
@@ -198,7 +191,3 @@ def test_paracontent_tesim(result: ManuscriptSolrRecord) -> None:
 
 def test_full_text_tesim(result: ManuscriptSolrRecord) -> None:
     assert result.full_text_tesim
-
-
-def test_all_fields_tesim(result: ManuscriptSolrRecord) -> None:
-    assert result.all_fields_tesim

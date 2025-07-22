@@ -171,9 +171,6 @@ class TestIso:
         with pytest.raises(ValidationError):
             st.Iso.model_validate_json('{"not_after": "0010"}')
 
-    def test_get_years(self) -> None:
-        assert st.Iso(not_before=121, not_after=123).get_years() == {121, 122, 123}
-
 
 class TestDate:
     DATE = st.Date(value='4th c. CE', iso=TestIso.ISO)

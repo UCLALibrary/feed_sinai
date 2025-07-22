@@ -2,6 +2,8 @@
 # pylint: disable=too-many-lines
 """Pydantic classes for the data model."""
 
+import logging
+from functools import cached_property
 from typing import (
     Callable,
     Iterator,
@@ -11,7 +13,6 @@ from typing import (
     cast,
 )
 
-from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field, computed_field
 from typing_extensions import ParamSpec
 
@@ -34,16 +35,21 @@ def filter_none(generator_function: Callable[P, Iterator[T | None]]) -> Callable
 
 class ManuscriptSolrRecord(st.BaseModel):
     ms_obj: st.ManuscriptObjectMerged = Field(..., exclude=True)
+    iiif_manifests: tuple[dict, ...] = tuple()
 
     def __repr__(self) -> str:
-        return f'<ManuscriptSolrRecord ark="{self.ark}">'
+        return f'<ManuscriptSolrRecord ark="{self.ark_ssi}">'
+
+    #
+    #   Blacklight Stuff
+    #
 
     @computed_field
     def id(self) -> str:
         return self.ms_obj.ark
 
     @computed_field
-    def ark(self) -> str:
+    def ark_ssi(self) -> str:
         return self.ms_obj.ark
 
     @computed_field
@@ -55,19 +61,22 @@ class ManuscriptSolrRecord(st.BaseModel):
         return 'open'
 
     @computed_field
-    def year_isim(self) -> set[int]:
-        return {
-            year
-            for layer in self.ms_obj.ot_layer
-            for date in layer.get_dates(date_type='origin')
-            for year in (date.iso.get_years() if date.iso else [])
-        } | {
-            year
-            for part in self.ms_obj.part
-            for layer in part.ot_layer
-            for date in layer.get_dates(date_type='origin')
-            for year in (date.iso.get_years() if date.iso else [])
-        }
+    def thumbnail_url_ss(self) -> st.AnyUrl | None:
+        """Picks a thumbnail downloading the IIIF manifest.
+
+        Args:
+            record: A mapping representing the CSV record.
+
+        Returns:
+            A string containing the thumbnail URL
+        """
+
+        for iiif in self.ms_obj.iiif:
+            if iiif.thumbnail:
+                return iiif.thumbnail
+
+        logging.warning(f'no thumbnail for {self.ms_obj.ark}')
+        return None
 
     #
     #   Facets (Main / any)
@@ -101,23 +110,19 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def names_ssim(self) -> set[str]:
-        return {
-            assoc_name.agent_record.pref_name
-            for assoc_name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged)
-            if assoc_name.agent_record
-        }
+        return {agent_record.pref_name for agent_record in self.ms_obj.deep_get(cls=st.Agent)}
 
     @computed_field
     def places_ssim(self) -> set[str]:
-        return {
-            assoc_place.place_record.pref_name
-            for assoc_place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged)
-            if assoc_place.place_record
-        }
+        return {place.pref_name for place in self.ms_obj.deep_get(cls=st.Place)}
 
     @computed_field
     def date_types_ssim(self) -> set[str]:
-        return {date.type.label for date in self.ms_obj.deep_get(cls=st.AssocDateItem)}
+        return {
+            date.type.label
+            for date in self.ms_obj.deep_get(cls=st.AssocDateItem)
+            if date.type.id != 'origin'
+        }
 
     @computed_field
     def program_ssim(self) -> set[str]:
@@ -134,9 +139,9 @@ class ManuscriptSolrRecord(st.BaseModel):
             if program.label
         }
 
-    #
-    #   Facets (Main-OT only)
-    #
+    @computed_field
+    def reconstructed_from_ssim(self) -> set[str]:
+        return set(self.ms_obj.reconstructed_from)
 
     @computed_field
     def ot_script_ssim(self) -> set[str]:
@@ -169,8 +174,9 @@ class ManuscriptSolrRecord(st.BaseModel):
         return {
             year
             for layer in self.ot_layers()
-            for date in layer.get_dates(date_type='origin')
-            for year in (date.iso.get_years() if date.iso else [])
+            for date in layer.layer_record.assoc_date
+            if date.type.id == 'origin' and date.iso
+            for year in range(date.iso.not_before, date.iso.not_after + 1)
         }
 
     @computed_field
@@ -184,20 +190,7 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def ot_works_ssim(self) -> set[str]:
-        return {
-            title
-            for layer in self.ot_layers()
-            for title in cast(str, layer.deep_get('pref_title', cls=str))
-        }
-
-    @computed_field
-    def ot_names_ssim(self) -> set[str]:
-        return {
-            creator.agent_record.pref_name
-            for layer in self.ot_layers()
-            for creator in layer.deep_get('creator', cls=st.AssocNameItemMerged)
-            if creator.agent_record
-        }
+        return set(self.get_work_titles(layer_type='ot_layer', pref_only=True))
 
     #
     #   Facets (Guest/Para Only)
@@ -205,39 +198,44 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def para_script_ssim(self) -> set[str]:
-        return (
-            {
-                script.label
-                for layer in self.guest_layers()
-                for writing_item in layer.layer_record.writing
-                for script in writing_item.script
-            }
-            | {script.label for para in self.ms_obj.para for script in para.script}
-            | {
-                script.label
-                for part in self.ms_obj.part
-                for para in part.para
-                for script in para.script
-            }
-        )
+        return {
+            script.label
+            for layer in self.guest_layers()
+            for writing_item in layer.layer_record.writing
+            for script in writing_item.script
+        } | {script.label for para in self.get_para() for script in para.script}
 
     @computed_field
     def para_writing_system_ssim(self) -> set[str]:
-        return (
-            {
-                script.writing_system
-                for layer in self.guest_layers()
-                for writing_item in layer.layer_record.writing
-                for script in writing_item.script
-            }
-            | {script.writing_system for para in self.ms_obj.para for script in para.script}
-            | {
-                script.writing_system
-                for part in self.ms_obj.part
-                for para in part.para
-                for script in para.script
-            }
-        )
+        return {
+            script.writing_system
+            for layer in self.guest_layers()
+            for writing_item in layer.layer_record.writing
+            for script in writing_item.script
+        } | {script.writing_system for para in self.get_para() for script in para.script}
+
+    @computed_field
+    def para_date_isim(self) -> set[int]:
+        return {
+            year
+            for layer in self.guest_layers()
+            for date in layer.layer_record.assoc_date
+            if date.type.id == 'origin' and date.iso
+            for year in range(date.iso.not_before, date.iso.not_after + 1)
+        }
+
+    @computed_field
+    def para_language_ssim(self) -> set[str]:
+        return {
+            language.label
+            for layer in self.guest_layers()
+            for text_unit in layer.layer_record.text_unit
+            for language in text_unit.text_unit_record.lang
+        } | {language.label for para in self.get_para() for language in para.lang}
+
+    @computed_field
+    def para_works_ssim(self) -> set[str]:
+        return set(self.get_work_titles(layer_type='guest_layer', pref_only=True))
 
     @computed_field
     def para_genre_ssim(self) -> set[str]:
@@ -248,54 +246,16 @@ class ManuscriptSolrRecord(st.BaseModel):
         }
 
     @computed_field
-    def para_date_isim(self) -> set[int]:
-        return {
-            year
-            for layer in self.guest_layers()
-            for date in layer.get_dates(date_type='origin')
-            for year in (date.iso.get_years() if date.iso else [])
-        }
-
-    @computed_field
-    def para_language_ssim(self) -> set[str]:
-        return (
-            {
-                language.label
-                for layer in self.guest_layers()
-                for text_unit in layer.layer_record.text_unit
-                for language in text_unit.text_unit_record.lang
-            }
-            | {language.label for para in self.ms_obj.para for language in para.lang}
-            | {
-                language.label
-                for part in self.ms_obj.part
-                for para in part.para
-                for language in para.lang
-            }
-        )
-
-    @computed_field
-    def para_works_ssim(self) -> set[str]:
-        return {
-            title
-            for layer in self.guest_layers()
-            for title in layer.deep_get('pref_title', cls=str)
-        }
-
-    @computed_field
     def para_names_ssim(self) -> set[str]:
         return {
-            creator.agent_record.pref_name
+            agent_record.pref_name
             for layer in self.guest_layers()
-            for creator in layer.deep_get('creator', cls=st.AssocNameItemMerged)
-            if creator.agent_record
+            for agent_record in layer.deep_get(cls=st.Agent)
         }
 
     @computed_field
     def para_type_ssim(self) -> set[str]:
-        return {para.type.label for para in self.ms_obj.para} | {
-            para.type.label for part in self.ms_obj.part for para in part.para
-        }
+        return {subtype.label for para in self.get_para() for subtype in para.subtype}
 
     #
     #   UTO facets
@@ -306,23 +266,18 @@ class ManuscriptSolrRecord(st.BaseModel):
         return {script for layer in self.uto_layers() for script in layer.script}
 
     @computed_field
+    def uto_language_ssim(self) -> set[str]:
+        return {language for layer in self.uto_layers() for language in layer.lang}
+
+    @computed_field
     def uto_date_isim(self) -> set[int]:
         return {
             year
             for layer in self.uto_layers()
             for date in layer.orig_date
-            for year in (date.iso.get_years() if date.iso else [])
+            if date.iso
+            for year in range(date.iso.not_before, date.iso.not_after + 1)
         }
-
-    @computed_field
-    def uto_language_ssim(self) -> set[str]:
-        return {language for layer in self.uto_layers() for language in layer.lang}
-
-    #
-    #   Full-Text search
-    #
-
-    # TODO
 
     #
     #   Scoped / keyword search
@@ -334,7 +289,7 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def titles_tesim(self) -> set[str]:
-        return self.get_titles(exclude=['guest_layer', 'uto'])
+        return set(self.get_work_titles(layer_type='ot_layer', pref_only=False))
 
     @computed_field
     def names_tesim(self) -> set[str]:
@@ -623,13 +578,12 @@ class ManuscriptSolrRecord(st.BaseModel):
             | {ms.label for ms in self.ms_obj.related_mss}
             | {note for ms in self.ms_obj.related_mss for note in ms.note}
             | {mss.label for ms in self.ms_obj.related_mss for mss in ms.mss}
+            | {para.type.label for part in self.ms_obj.part for para in part.para}
         )
 
     @computed_field
-    def all_fields_tesim(self) -> set[str]:
-        return cast(set[str], self.full_text_tesim) | {
-            para.type.label for part in self.ms_obj.part for para in part.para
-        }
+    def manuscript_json_ss(self) -> str:
+        return self.ms_obj.model_dump_json()
 
     #
     #   Helper methods
@@ -649,6 +603,45 @@ class ManuscriptSolrRecord(st.BaseModel):
         for part in self.ms_obj.part:
             yield from part.uto
         yield from self.ms_obj.uto
+
+    def get_layers(
+        self, layer_type: LAYER_FIELDS | None = None
+    ) -> Iterator[st.ManuscriptLayerMerged]:
+        layer_types = [layer_type] if layer_type else ['ot_layer', 'guest_layer', 'uto']
+        for layer_type in layer_types:
+            for part in self.ms_obj.part:
+                yield from getattr(part, layer_type)
+            yield from getattr(self.ms_obj, layer_type)
+
+    def get_work_wits(
+        self, layer_type: LAYER_FIELDS | None = None
+    ) -> Iterator[st.WorkWitItemMerged]:
+        for layer in self.get_layers(layer_type=layer_type):
+            for text_unit in layer.layer_record.text_unit:
+                yield from text_unit.text_unit_record.work_wit
+
+    @filter_none
+    def get_work_titles(
+        self, layer_type: LAYER_FIELDS | None = None, pref_only: bool = True
+    ) -> Iterator[str | None]:
+        for work_wit in self.get_work_wits(layer_type=layer_type):
+            if isinstance(work_wit.work, st.ConceptualWork):
+                yield work_wit.work.pref_title
+                if not pref_only:
+                    yield work_wit.work.orig_lang_title
+                    yield from work_wit.work.alt_title
+            elif isinstance(work_wit.work, st.WorkBrief) and not pref_only:
+                yield work_wit.work.desc_title
+
+            for section in work_wit.contents:
+                yield section.pref_title
+                if not pref_only:
+                    yield section.label
+                    yield section.pref_title
+
+            if not pref_only:
+                yield work_wit.alt_title
+                yield work_wit.as_written
 
     def get_titles(self, exclude: list[LAYER_FIELDS] = []) -> set[str]:
         return (
@@ -717,24 +710,8 @@ class ManuscriptSolrRecord(st.BaseModel):
             }
         )
 
-    def get_names(self, exclude: list[LAYER_FIELDS]) -> set[str]:
-        return {
-            name
-            for assoc_name_item in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-            for name in [
-                assoc_name_item.value,
-                assoc_name_item.as_written,
-            ]
-            if name
-        } | {
-            name
-            for agent in self.ms_obj.deep_get(cls=st.Agent, exclude=exclude)
-            for name in [
-                agent.pref_name,
-                *agent.alt_name,
-            ]
-        }
-
-    @computed_field
-    def manuscript_json_ss(self) -> str:
-        return self.ms_obj.model_dump_json()
+    def get_para(self) -> Iterator[st.ParaItemMerged]:
+        """Get all para items from the manuscript."""
+        yield from self.ms_obj.para
+        for part in self.ms_obj.part:
+            yield from part.para

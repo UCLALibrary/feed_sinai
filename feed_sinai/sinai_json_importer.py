@@ -9,8 +9,9 @@ Output is pushed to a solr index suitable for use by https://github.com/UCLALibr
 import json
 import logging
 from pathlib import Path
-from typing import Any, Iterator, Optional
+from typing import Any, Iterator, Optional, cast
 
+import rich.progress
 from pysolr import Solr  # type: ignore
 
 import feed_sinai.sinai_types as st
@@ -173,7 +174,9 @@ class SinaiJsonImporter:
                 for text_unit in layer_record.text_unit
                 for lang in text_unit.text_unit_record.lang
             ],
-            orig_date=[date for date in layer_record.get_dates(date_type='origin')],
+            orig_date=[
+                date for date in (layer_record.assoc_date or []) if date.type.id == 'origin'
+            ],
         )
 
     def get_part(self, raw: st.PartUnmerged) -> st.PartMerged:
@@ -204,7 +207,8 @@ class SinaiJsonImporter:
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
         """Yield json records for manuscripts with other data embedded."""
 
-        for path in (self.base_path / 'ms_objs').glob('*.json'):
+        paths = tuple((self.base_path / 'ms_objs').glob('*.json'))
+        for path in rich.progress.track(paths):
             try:
                 yield self.get_merged_manuscript(path)
             except Exception as e:
@@ -220,7 +224,14 @@ class SinaiJsonImporter:
         return json.loads(ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json())
 
     def load_to_solr(self) -> None:
-        self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
+        # self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
+        for record in self.iterate_merged_records():
+            try:
+                self.solr.add(self.solr_record(record))
+            except Exception as e:
+                logging.warning(
+                    f'could not load document {cast(st.ManuscriptObjectMerged, record).ark}: {e}'
+                )
 
     def save_solr_records(self) -> None:
         (self.base_path / 'solr').mkdir(exist_ok=True)
