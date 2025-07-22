@@ -1,11 +1,11 @@
 # mypy: disable-error-code=truthy-function
 from pathlib import Path
+from typing import Iterator
 
 import pytest
 
 from feed_sinai.sinai_json_importer import SinaiJsonImporter
-from feed_sinai.solr_record import ManuscriptSolrRecord
-from tests.importers.test_sinai_importer import importer
+from feed_sinai.solr_record import ManuscriptSolrRecord, filter_none
 
 BASE_PATH = 'tests/export_test'
 IMPORTER = SinaiJsonImporter(base_path=BASE_PATH)
@@ -17,6 +17,15 @@ SOLR_RECORD = ManuscriptSolrRecord(
 @pytest.fixture
 def result() -> ManuscriptSolrRecord:
     return SOLR_RECORD
+
+
+def test_filter_none() -> None:
+    @filter_none
+    def f() -> Iterator[int | None]:
+        yield from (1, 2, 3, None, 4, None)
+
+    result = tuple(f())
+    assert result == (1, 2, 3, 4)
 
 
 def test_id(result: ManuscriptSolrRecord) -> None:

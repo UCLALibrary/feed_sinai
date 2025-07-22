@@ -3,18 +3,33 @@
 """Pydantic classes for the data model."""
 
 from typing import (
+    Callable,
     Iterator,
     List,
     Literal,
+    TypeVar,
     cast,
 )
 
 from pydantic import BaseModel as PydanticBaseModel
 from pydantic import Field, computed_field
+from typing_extensions import ParamSpec
 
 import feed_sinai.sinai_types as st
 
 LAYER_FIELDS = Literal['ot_layer', 'guest_layer', 'uto']
+
+P = ParamSpec('P')
+T = TypeVar('T')
+
+
+def filter_none(generator_function: Callable[P, Iterator[T | None]]) -> Callable[P, Iterator[T]]:
+    def wrapper(*args: P.args, **kwds: P.kwargs) -> Iterator[T]:
+        for item in generator_function(*args, **kwds):
+            if item is not None:
+                yield item
+
+    return wrapper
 
 
 class ManuscriptSolrRecord(st.BaseModel):
