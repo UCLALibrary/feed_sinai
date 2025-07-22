@@ -43,6 +43,18 @@ def load(base_path: str, solr_url: str) -> None:
     importer.load_to_solr()
 
 
+@sinai.command('wipe')
+@click.argument(
+    'solr_url',
+    nargs=1,
+    default='http://localhost:8983/solr/californica',
+    # help="URL of a solr instance, e.g. http://localhost:8983/solr/californica",
+)
+def wipe(solr_url: str) -> None:
+    importer = SinaiJsonImporter(solr_url=solr_url)
+    importer.wipe_solr_records()
+
+
 @sinai.command('save_solr_records')
 @click.argument(
     'base_path', nargs=1, default='.', type=click.Path(exists=True, dir_okay=True, file_okay=False)

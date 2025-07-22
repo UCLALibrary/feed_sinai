@@ -227,3 +227,6 @@ class SinaiJsonImporter:
         for record in self.iterate_merged_records():
             path = self.base_path / 'solr' / self.get_filename(record.ark)
             path.write_text(ManuscriptSolrRecord(ms_obj=record).model_dump_json(indent=2))
+
+    def wipe_solr_records(self) -> None:
+        self.solr.delete(q='*:*')
