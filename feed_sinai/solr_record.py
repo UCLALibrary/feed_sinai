@@ -261,6 +261,11 @@ class ManuscriptSolrRecord(st.BaseModel):
             agent_record.pref_name
             for layer in self.guest_layers()
             for agent_record in layer.deep_get(cls=st.Agent)
+        } | {
+            assoc_name.agent_record.pref_name
+            for para in self.get_para()
+            for assoc_name in para.assoc_name
+            if assoc_name.agent_record
         }
 
     @computed_field
@@ -723,5 +728,12 @@ class ManuscriptSolrRecord(st.BaseModel):
     def get_para(self) -> Iterator[st.ParaItemMerged]:
         """Get all para items from the manuscript."""
         yield from self.ms_obj.para
+
         for part in self.ms_obj.part:
             yield from part.para
+
+        for layer in self.get_layers():
+            yield from layer.layer_record.para
+
+            for text_unit in layer.layer_record.text_unit:
+                yield from text_unit.text_unit_record.para
