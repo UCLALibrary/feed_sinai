@@ -6,11 +6,14 @@ Input files are stored in https://github.com/UCLALibrary/sinaiportal_data
 Output is pushed to a solr index suitable for use by https://github.com/UCLALibrary/sinaimanuscripts
 """
 
+import asyncio
 import json
 import logging
+from math import inf
 from pathlib import Path
-from typing import Any, Iterator, Optional, cast
+from typing import Any, Awaitable, Iterator, Optional, cast
 
+import httpx
 import rich.progress
 from pysolr import Solr  # type: ignore
 
@@ -23,10 +26,14 @@ class SinaiJsonImporter:
 
     base_path: Path
     solr: Solr
+    solr_url: str | None
+    async_client = httpx.AsyncClient()
+    connection_pool = asyncio.Semaphore(3)
 
     def __init__(self, base_path: str = '.', solr_url: Optional[str] = None):
         self.base_path = Path(base_path)
         self.solr = Solr(solr_url, always_commit=True)
+        self.solr_url = solr_url
 
     @staticmethod
     def get_filename(ark: str) -> str:
@@ -223,15 +230,42 @@ class SinaiJsonImporter:
     def solr_record(self, ms_obj: st.ManuscriptObjectMerged) -> dict[str, Any]:
         return json.loads(ManuscriptSolrRecord(ms_obj=ms_obj).model_dump_json())
 
-    def load_to_solr(self) -> None:
-        # self.solr.add([self.solr_record(ms) for ms in self.iterate_merged_records()])
+    async def load_to_solr(self, batch_size: float = inf) -> None:
+        """
+        Loads records to Solr in batches. `batch_size` should be a positive integer or `math.inf`.
+        """
+        batch: list[dict] = list()
+        results: list[Awaitable[None]] = list()
+
         for record in self.iterate_merged_records():
             try:
-                self.solr.add(self.solr_record(record))
+                batch.append(self.solr_record(record))
             except Exception as e:
-                logging.warning(
-                    f'could not load document {cast(st.ManuscriptObjectMerged, record).ark}: {e}'
+                logging.warning(f'could not generate solr document {record.ark}: {e}')
+
+            if len(batch) > 100:
+                results.append(self.add_batch(batch))
+                batch = list()
+
+        if len(batch) > 0:
+            results.append(self.add_batch(batch))
+
+        await asyncio.gather(*results)
+
+    async def add_batch(self, batch: list[dict]) -> None:
+        async with self.connection_pool:
+            response = await self.async_client.post(
+                f'{self.solr_url}/update?commit=true', json=batch
+            )
+
+        if response.is_error:
+            if len(batch) == 1:
+                print(
+                    f'Error adding record {batch[0]["id"]}: {response.json().get("error").get("msg")}'
                 )
+            else:
+                mid = int(len(batch) / 2)
+                await asyncio.gather(self.add_batch(batch[:mid]), self.add_batch(batch[mid:]))
 
     def save_solr_records(self) -> None:
         (self.base_path / 'solr').mkdir(exist_ok=True)

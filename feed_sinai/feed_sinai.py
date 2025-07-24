@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 """Convert UCLA Library CSV files for Ursus, our Blacklight installation."""
 
+import asyncio
 import importlib.metadata
 
 import click
@@ -40,7 +41,7 @@ def export(base_path: str) -> None:
 )
 def load(base_path: str, solr_url: str) -> None:
     importer = SinaiJsonImporter(base_path=base_path, solr_url=solr_url)
-    importer.load_to_solr()
+    asyncio.run(importer.load_to_solr())
 
 
 @sinai.command('wipe')
