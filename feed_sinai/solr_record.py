@@ -213,7 +213,12 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.guest_layers()
             for writing_item in layer.layer_record.writing
             for script in writing_item.script
-        } | {script.label for para in self.get_para() for script in para.script}
+        } | {
+            script.label
+            for para in self.get_para()
+            if para.type.id != 'framing'
+            for script in para.script
+        }
 
     @computed_field
     def para_writing_system_ssim(self) -> set[str]:
@@ -222,7 +227,12 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.guest_layers()
             for writing_item in layer.layer_record.writing
             for script in writing_item.script
-        } | {script.writing_system for para in self.get_para() for script in para.script}
+        } | {
+            script.writing_system
+            for para in self.get_para()
+            if para.type.id != 'framing'
+            for script in para.script
+        }
 
     @computed_field
     def para_date_isim(self) -> set[int]:
@@ -241,7 +251,12 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.guest_layers()
             for text_unit in layer.layer_record.text_unit
             for language in text_unit.text_unit_record.lang
-        } | {language.label for para in self.get_para() for language in para.lang}
+        } | {
+            language.label
+            for para in self.get_para()
+            if para.type.id != 'framing'
+            for language in para.lang
+        }
 
     @computed_field
     def para_works_ssim(self) -> set[str]:

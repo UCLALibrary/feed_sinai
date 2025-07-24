@@ -141,7 +141,12 @@ def test_para_works_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_para_names_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_names_ssim == {'Ephrem'}
+    assert result.para_names_ssim == {
+        'Ephrem',
+        'Paul the Deacon',
+        'Maximus the Confessor',
+        'Andrew of Crete',
+    }
 
 
 def test_para_type_ssim(result: ManuscriptSolrRecord) -> None:
