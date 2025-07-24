@@ -61,22 +61,32 @@ class ManuscriptSolrRecord(st.BaseModel):
         return 'open'
 
     @computed_field
+    def discover_access_group_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
+    def read_access_group_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
+    def download_access_person_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
     def thumbnail_url_ss(self) -> st.AnyUrl | None:
-        """Picks a thumbnail downloading the IIIF manifest.
-
-        Args:
-            record: A mapping representing the CSV record.
-
-        Returns:
-            A string containing the thumbnail URL
-        """
-
         for iiif in self.ms_obj.iiif:
             if iiif.thumbnail:
                 return iiif.thumbnail
 
         logging.warning(f'no thumbnail for {self.ms_obj.ark}')
         return None
+
+    @computed_field
+    def iiif_manifest_url_ssi(self) -> st.AnyUrl | None:
+        if len(self.ms_obj.iiif) == 0:
+            return None
+
+        return self.ms_obj.iiif[0].manifest
 
     #
     #   Facets (Main / any)
