@@ -2,15 +2,14 @@
 # pylint: disable=too-many-lines
 """Pydantic classes for the data model."""
 
-import re
-from datetime import date, datetime
+from datetime import datetime
 from enum import Enum
 from typing import (
     Annotated,
     Any,
     Callable,
     Collection,
-    List,
+    Iterator,
     Literal,
     Optional,
     Self,
@@ -19,12 +18,13 @@ from typing import (
 )
 from uuid import UUID
 
-import dateutil.parser
+import edtf  # type: ignore
 from pydantic import (
     AnyUrl,
     ConfigDict,
     Field,
     StringConstraints,
+    field_validator,
     model_validator,
 )
 from pydantic import (
@@ -151,36 +151,26 @@ class ControlledTerm(BaseModel):
 #   timestamp: 2025-05-28T17:21:15+00:00
 
 
-def parse_date(input_date: str | int | date | datetime | None) -> int | None:
-    """Most of our dates are 4-digit strings representing years. By default dateutil.parser"""
-    if isinstance(input_date, str):
-        if re.match(r'^\d\d\d\d$', input_date):
-            return int(input_date)
-        else:
-            return dateutil.parser.parse(input_date).year
-    elif isinstance(input_date, (date, datetime)):
-        return input_date.year
-    elif isinstance(input_date, (int)):
-        return input_date
-    else:
-        # so it will raise a ValidationError
-        return None
-
-
 class Iso(BaseModel):
-    not_before: int
-    not_after: int
+    not_before: str
+    not_after: str | None = None
 
-    @model_validator(mode='before')
+    @field_validator('not_before', mode='after')
     @classmethod
-    def parse_inputs(cls, data: dict) -> dict:
-        """By convention, single-year dates only have not_before. We want to copy that to not_after if it's empty."""
+    def is_date_string(cls, value: str) -> str:
+        assert isinstance(edtf.parse_edtf(value), edtf.Date)
+        return value
 
-        data.setdefault('not_after', data.get('not_before'))
-        return {
-            'not_before': parse_date(data.get('not_before')),
-            'not_after': parse_date(data.get('not_after')),
-        }
+    @field_validator('not_after', mode='after')
+    @classmethod
+    def is_date_string_or_none(cls, value: str) -> str:
+        assert value is None or isinstance(edtf.parse_edtf(value), edtf.Date)
+        return value
+
+    def years(self) -> range:
+        start = int(edtf.parse_edtf(self.not_before).year)
+        end = int(edtf.parse_edtf(self.not_after or self.not_before).year)
+        return range(start, end + 1)
 
 
 class Date(BaseModel):

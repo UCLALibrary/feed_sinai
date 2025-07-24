@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Hashable, List, Optional
 from unittest.mock import Mock
@@ -34,19 +34,19 @@ class TestBaseModel:
     class TestDeepGet:
         @pytest.fixture
         def obj(self) -> st.Date:
-            return st.Date(value='sometime', iso=st.Iso(not_before=-14000000000, not_after=2025))
+            return st.Date(value='sometime', iso=st.Iso(not_before='1980', not_after='2025'))
 
         def test_gets_by_type(self, obj: st.Date) -> None:
-            assert obj.deep_get(cls=str) == {'sometime'}
+            assert 'sometime' in obj.deep_get(cls=str)
 
         def test_gets_by_type_from_children(self, obj: st.Date) -> None:
-            assert obj.deep_get(cls=int) == {-14000000000, 2025}
+            assert {'1980', '2025'} <= obj.deep_get('not_before', 'not_after', cls=str)
 
         def test_gets_by_name(self, obj: st.Date) -> None:
-            assert obj.deep_get('not_after', cls=int) == {2025}
+            assert obj.deep_get('not_after', cls=str) == {'2025'}
 
         def test_ignores_by_name(self, obj: st.Date) -> None:
-            assert obj.deep_get(cls=int, exclude=['not_before']) == {2025}
+            assert '1980' not in obj.deep_get(cls=str, exclude=['not_before'])
 
         def test_gets_submodels(self, obj: st.Date) -> None:
             assert obj.deep_get(cls=st.Iso) == {obj.iso}
@@ -135,37 +135,19 @@ class TestControlledTerm:
 #         assert result.gender == st.Gender.other
 
 
-@pytest.mark.parametrize(
-    ('input', 'result'),
-    (
-        ('1980', 1980),
-        ('1980-09-21', 1980),
-        (1980, 1980),
-        (date(1980, 9, 21), 1980),
-        (datetime(1980, 9, 21, hour=12, minute=5), 1980),
-    ),
-)
-def test_parse_date(input: str | int | date | datetime, result: int) -> None:
-    assert st.parse_date(input) == result
-
-
 class TestIso:
-    ISO = {'not_before': 10, 'not_after': 100}
+    ISO = st.Iso(not_before='0010', not_after='0100')
 
     def test_good_iso(self) -> None:
-        assert (
-            st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}').model_dump()
-            == self.ISO
-        )
+        assert st.Iso.model_validate_json('{"not_before": "0010", "not_after": "0100"}') == self.ISO
 
     def test_hashable(self) -> None:
-        result = st.Iso(not_before=10, not_after=100)
-        assert isinstance(result, Hashable)
+        assert hash(self.ISO)
 
     def test_no_notafter(self) -> None:
         result = st.Iso.model_validate_json('{"not_before": "0010"}')
-        assert result.not_before == 10
-        assert result.not_after == 10
+        assert result.not_before == '0010'
+        assert result.not_after is None
 
     def test_no_notbefore(self) -> None:
         with pytest.raises(ValidationError):
@@ -173,8 +155,29 @@ class TestIso:
 
     def test_optional_month_and_year(self) -> None:
         result = st.Iso.model_validate_json('{"not_before": "2017-07", "not_after": "2025-07-23"}')
-        assert result.not_before == 2017
-        assert result.not_after == 2025
+        assert result.not_before == '2017-07'
+        assert result.not_after == '2025-07-23'
+        assert tuple(result.years()) == (2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025)
+
+    def test_negative_year(self) -> None:
+        assert st.Iso.model_validate_json('{"not_before": "-0003"}').not_before == '-0003'
+
+    class TestYears:
+        def test_returns_range(self) -> None:
+            range_obj = TestIso.ISO.years()
+            assert isinstance(range_obj, range)
+            result = [*range_obj]
+            assert result[:3] == [10, 11, 12] and result[-3:] == [98, 99, 100]
+
+        def test_no_notafter(self) -> None:
+            result = [*st.Iso.model_validate_json('{"not_before": "0010"}').years()]
+            assert result == [10]
+
+        def test_negative_and_zero_years(self) -> None:
+            result = st.Iso.model_validate_json(
+                '{"not_before": "-0003-04-05", "not_after": "0002"}'
+            )
+            assert [*result.years()] == [-3, -2, -1, 0, 1, 2]
 
 
 class TestDate:

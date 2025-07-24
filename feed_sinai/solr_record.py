@@ -186,7 +186,7 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.ot_layers()
             for date in layer.layer_record.assoc_date
             if date.type.id == 'origin' and date.iso
-            for year in range(date.iso.not_before, date.iso.not_after + 1)
+            for year in date.iso.years()
         }
 
     @computed_field
@@ -231,7 +231,7 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.guest_layers()
             for date in layer.layer_record.assoc_date
             if date.type.id == 'origin' and date.iso
-            for year in range(date.iso.not_before, date.iso.not_after + 1)
+            for year in date.iso.years()
         }
 
     @computed_field
@@ -286,7 +286,7 @@ class ManuscriptSolrRecord(st.BaseModel):
             for layer in self.uto_layers()
             for date in layer.orig_date
             if date.iso
-            for year in range(date.iso.not_before, date.iso.not_after + 1)
+            for year in date.iso.years()
         }
 
     #
