@@ -678,19 +678,31 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     def get_layers(
         self, layer_type: LAYER_FIELDS | None = None
-    ) -> Iterator[st.ManuscriptLayerMerged]:
+    ) -> Iterator[st.ManuscriptLayerMerged | st.UndertextManuscriptLayerMerged]:
         layer_types = [layer_type] if layer_type else ['ot_layer', 'guest_layer', 'uto']
-        for layer_type in layer_types:
+
+        if layer_type in ('ot_layer', None):
+            yield from self.ms_obj.ot_layer
             for part in self.ms_obj.part:
-                yield from getattr(part, layer_type)
-            yield from getattr(self.ms_obj, layer_type)
+                yield from part.ot_layer
+
+        if layer_type in ('guest_layer', None):
+            yield from self.ms_obj.guest_layer
+            for part in self.ms_obj.part:
+                yield from part.guest_layer
+
+        if layer_type in ('uto', None):
+            yield from self.ms_obj.uto
+            for part in self.ms_obj.part:
+                yield from part.uto
 
     def get_work_wits(
         self, layer_type: LAYER_FIELDS | None = None
     ) -> Iterator[st.WorkWitItemMerged]:
         for layer in self.get_layers(layer_type=layer_type):
-            for text_unit in layer.layer_record.text_unit:
-                yield from text_unit.text_unit_record.work_wit
+            if isinstance(layer, st.ManuscriptLayerMerged):
+                for text_unit in layer.layer_record.text_unit:
+                    yield from text_unit.text_unit_record.work_wit
 
     @filter_none
     def get_work_titles(
@@ -790,7 +802,8 @@ class ManuscriptSolrRecord(st.BaseModel):
             yield from part.para
 
         for layer in self.get_layers():
-            yield from layer.layer_record.para
+            if isinstance(layer, st.ManuscriptLayerMerged):
+                yield from layer.layer_record.para
 
-            for text_unit in layer.layer_record.text_unit:
-                yield from text_unit.text_unit_record.para
+                for text_unit in layer.layer_record.text_unit:
+                    yield from text_unit.text_unit_record.para

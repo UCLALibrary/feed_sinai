@@ -7,6 +7,7 @@ import pytest
 
 import feed_sinai.sinai_types as st
 from feed_sinai.sinai_json_importer import SinaiJsonImporter
+from feed_sinai.solr_record import ManuscriptSolrRecord
 from tests.importers import test_sinai_types
 
 # feed_sinai.mapper = importlib.import_module("feed_sinai.mapper.dlp")
@@ -542,16 +543,16 @@ class TestGetMergedManuscript:
         assert n_files == 15
 
 
-@pytest.mark.xfail
-def test_iterate_merged_records() -> None:
-    raise NotImplementedError()
+def test_iterate_merged_records(importer: SinaiJsonImporter) -> None:
+    for ms_obj in importer.iterate_merged_records():
+        assert isinstance(ms_obj, st.ManuscriptObjectMerged)
+        assert isinstance(ms_obj.model_dump_json(), str)
 
 
-@pytest.mark.xfail
-def test_save_merged_records() -> None:
-    raise NotImplementedError()
+def test_solr_record_works_on_all(importer: SinaiJsonImporter) -> None:
+    for ms_obj in importer.iterate_merged_records():
+        solr = ManuscriptSolrRecord(ms_obj=ms_obj)
+        for field in ManuscriptSolrRecord.model_computed_fields:
+            getattr(solr, field)
 
-
-@pytest.mark.xfail
-def test_solr_record() -> None:
-    raise NotImplementedError()
+        assert isinstance(importer.solr_record(ms_obj=ms_obj), dict)
