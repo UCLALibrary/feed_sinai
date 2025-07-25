@@ -160,7 +160,11 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def reconstructed_from_ssim(self) -> list[str]:
-        return sorted(set(self.ms_obj.reconstructed_from))
+        return [ms.id for ms in self.ms_obj.reconstructed_from]
+
+    @computed_field
+    def reconstructed_from_shelfmark(self) -> list[str]:
+        return [ms.shelfmark for ms in self.ms_obj.reconstructed_from]
 
     @computed_field
     def ot_script_ssim(self) -> list[str]:

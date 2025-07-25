@@ -937,6 +937,58 @@ class TestManuscriptObject:
         )
         assert result.image_provenance.program[0].camera_operator[0] == 'Damianos Kasotakis'  # type: ignore
 
+    def test_unmerged_reconstructed_from_is_ark(self) -> None:
+        result = st.ManuscriptObjectUnmerged(
+            ark='ark:/21198/test',
+            reconstruction=True,
+            type=Mock(st.ControlledTerm),
+            shelfmark='abc',
+            state=Mock(st.ControlledTerm),
+            part=(Mock(st.PartUnmerged),),
+            location=(Mock(st.LocationItem),),
+            reconstructed_from=('ark:/21198/456', 'ark:/21198/789'),
+        )
+        assert result.reconstructed_from == ('ark:/21198/456', 'ark:/21198/789')
+
+    def test_unmerged_reconstructed_from_not_object(self) -> None:
+        with pytest.raises(ValidationError):
+            st.ManuscriptObjectUnmerged(
+                ark='ark:/21198/test',
+                reconstruction=True,
+                type=Mock(st.ControlledTerm),
+                shelfmark='abc',
+                state=Mock(st.ControlledTerm),
+                part=(Mock(st.PartUnmerged),),
+                location=(Mock(st.LocationItem),),
+                reconstructed_from=(Mock(st.ReconstructedFrom), Mock(st.ReconstructedFrom)),
+            )
+
+    def test_merged_reconstructed_from_is_object(self) -> None:
+        result = st.ManuscriptObjectMerged(
+            ark='ark:/21198/test',
+            reconstruction=True,
+            type=Mock(st.ControlledTerm),
+            shelfmark='abc',
+            state=Mock(st.ControlledTerm),
+            part=(Mock(st.PartMerged),),
+            location=(Mock(st.LocationItem),),
+            reconstructed_from=(Mock(st.ReconstructedFrom), Mock(st.ReconstructedFrom)),
+        )
+        assert isinstance(result.reconstructed_from[0], st.ReconstructedFrom)
+
+    def test_merged_reconstructed_from_not_ark(self) -> None:
+        with pytest.raises(ValidationError):
+            st.ManuscriptObjectMerged(
+                ark='ark:/21198/test',
+                reconstruction=True,
+                type=Mock(st.ControlledTerm),
+                shelfmark='abc',
+                state=Mock(st.ControlledTerm),
+                part=(Mock(st.PartMerged),),
+                location=(Mock(st.LocationItem),),
+                reconstructed_from=('ark:/21198/456', 'ark:/21198/789'),
+            )
+
 
 class TestWorkStub:
     def test_good_WorkStub(self) -> None:

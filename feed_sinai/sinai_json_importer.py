@@ -11,7 +11,7 @@ import json
 import logging
 from math import inf
 from pathlib import Path
-from typing import Any, Awaitable, Iterator, Optional, cast
+from typing import Any, Awaitable, Iterator, Optional
 
 import httpx
 import rich.progress
@@ -30,10 +30,14 @@ class SinaiJsonImporter:
     async_client = httpx.AsyncClient()
     connection_pool = asyncio.Semaphore(3)
 
+    _ms_objs_merged: dict[Path, st.ManuscriptObjectMerged]
+
     def __init__(self, base_path: str = '.', solr_url: Optional[str] = None):
         self.base_path = Path(base_path)
         self.solr = Solr(solr_url, always_commit=True)
         self.solr_url = solr_url
+
+        self._ms_objs_merged = dict()
 
     @staticmethod
     def get_filename(ark: str) -> str:
@@ -113,6 +117,10 @@ class SinaiJsonImporter:
             st.TextUnitMerged,
             work_wit=[self.get_work_wit(work_wit) for work_wit in raw.work_wit],
             para=[self.get_para(para) for para in raw.para],
+            reconstructed_from=[
+                st.ReconstructedFrom(id=ark, shelfmark=self.get_merged_manuscript(ark).shelfmark)
+                for ark in raw.reconstructed_from
+            ],
         )
 
     def get_layer_text_unit(self, raw: st.LayerTextUnitUnmerged) -> st.LayerTextUnitMerged:
@@ -149,6 +157,10 @@ class SinaiJsonImporter:
             para=[self.get_para(para) for para in raw.para],
             assoc_name=[self.get_assoc_name_item(name_item) for name_item in raw.assoc_name],
             assoc_place=[self.get_assoc_place_item(place) for place in raw.assoc_place],
+            reconstructed_from=[
+                st.ReconstructedFrom(id=ark, shelfmark=self.get_merged_manuscript(ark).shelfmark)
+                for ark in raw.reconstructed_from
+            ],
         )
 
         return ms_layer.convert(st.ManuscriptLayerMerged, layer_record=layer_record)
@@ -196,10 +208,18 @@ class SinaiJsonImporter:
             para=[self.get_para(para) for para in raw.para],
         )
 
-    def get_merged_manuscript(self, path: Path) -> st.ManuscriptObjectMerged:
+    def get_merged_manuscript(self, path_or_ark: Path | str) -> st.ManuscriptObjectMerged:
+        if isinstance(path_or_ark, str):
+            path = self.base_path / 'ms_objs' / (path_or_ark.removeprefix('ark:/21198/') + '.json')
+        else:
+            path = path_or_ark
+
+        if path in self._ms_objs_merged:
+            return self._ms_objs_merged[path]
+
         raw = st.ManuscriptObjectUnmerged.model_validate_json(path.read_text())
 
-        return raw.convert(
+        self._ms_objs_merged[path] = raw.convert(
             st.ManuscriptObjectMerged,
             part=[self.get_part(stub) for stub in raw.part],
             layer=[],
@@ -209,7 +229,13 @@ class SinaiJsonImporter:
             assoc_name=[self.get_assoc_name_item(name) for name in raw.assoc_name],
             assoc_place=[self.get_assoc_place_item(place) for place in raw.assoc_place],
             para=[self.get_para(para) for para in raw.para],
+            reconstructed_from=[
+                st.ReconstructedFrom(id=ark, shelfmark=self.get_merged_manuscript(ark).shelfmark)
+                for ark in raw.reconstructed_from
+            ],
         )
+
+        return self._ms_objs_merged[path]
 
     def iterate_merged_records(self) -> Iterator[st.ManuscriptObjectMerged]:
         """Yield json records for manuscripts with other data embedded."""

@@ -9,7 +9,6 @@ from typing import (
     Any,
     Callable,
     Collection,
-    Iterator,
     Literal,
     Optional,
     Self,
@@ -818,6 +817,11 @@ class ImageProvenance(BaseModel):
     )
 
 
+class ReconstructedFrom(BaseModel):
+    id: Ark
+    shelfmark: NonEmptyStr
+
+
 class ManuscriptObject(BaseModel):
     ark: Ark = Field(..., description='A unique Archival Resource Key (ARK)')
     reconstruction: bool
@@ -825,7 +829,7 @@ class ManuscriptObject(BaseModel):
     shelfmark: NonEmptyStr
     summary: Optional[NonEmptyStr] = None
     extent: Optional[NonEmptyStr] = Field(
-        ...,
+        None,
         description='The extent, expressed in number of folios, which comprise the manuscript object',
     )
     weight: Optional[NonEmptyStr] = Field(
@@ -861,7 +865,7 @@ class ManuscriptObject(BaseModel):
     iiif: tuple[IiifItem, ...] = tuple()
     internal: tuple[str, ...] = tuple()
     cataloguer: tuple[CataloguerItem, ...] = tuple()
-    reconstructed_from: tuple[Ark, ...] = tuple()
+    reconstructed_from: tuple[Ark, ...] | tuple[ReconstructedFrom, ...] = tuple()
 
     # in regular schemas but not export_test schema, unattested in data
     # think this got replaced with desc_provenance and/or image_provenance
@@ -880,6 +884,7 @@ class ManuscriptObjectUnmerged(ManuscriptObject):
     assoc_name: tuple[AssocNameItemUnmerged, ...] = tuple()
     assoc_place: tuple[AssocPlaceItemUnmerged, ...] = tuple()
     para: tuple[ParaItemUnmerged, ...] = tuple()
+    reconstructed_from: tuple[Ark, ...] = tuple()
 
 
 class ManuscriptObjectMerged(ManuscriptObject):
@@ -894,3 +899,4 @@ class ManuscriptObjectMerged(ManuscriptObject):
     assoc_place: tuple[AssocPlaceItemMerged, ...] = tuple()
 
     para: tuple[ParaItemMerged, ...] = tuple()
+    reconstructed_from: tuple[ReconstructedFrom, ...] = tuple()
