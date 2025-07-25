@@ -101,213 +101,250 @@ class ManuscriptSolrRecord(st.BaseModel):
         return self.ms_obj.state.label
 
     @computed_field
-    def features_ssim(self) -> set[str]:
-        return {
-            feature.label for feature in self.ms_obj.deep_get('features', cls=st.ControlledTerm)
-        }
+    def features_ssim(self) -> list[str]:
+        return sorted(
+            {feature.label for feature in self.ms_obj.deep_get('features', cls=st.ControlledTerm)}
+        )
 
     @computed_field()
-    def support_ssim(self) -> set[str]:
-        return {support.label for part in self.ms_obj.part for support in part.support}
+    def support_ssim(self) -> list[str]:
+        return sorted({support.label for part in self.ms_obj.part for support in part.support})
 
     @computed_field
-    def repository_ssim(self) -> set[str]:
-        return {location.repository for location in self.ms_obj.location}
+    def repository_ssim(self) -> list[str]:
+        return sorted({location.repository for location in self.ms_obj.location})
 
     @computed_field
-    def collection_ssim(self) -> set[str]:
-        return {location.collection for location in self.ms_obj.location if location.collection}
+    def collection_ssim(self) -> list[str]:
+        return sorted(
+            {location.collection for location in self.ms_obj.location if location.collection}
+        )
 
     @computed_field
-    def names_ssim(self) -> set[str]:
-        return {agent_record.pref_name for agent_record in self.ms_obj.deep_get(cls=st.Agent)}
+    def names_ssim(self) -> list[str]:
+        return sorted(
+            {agent_record.pref_name for agent_record in self.ms_obj.deep_get(cls=st.Agent)}
+        )
 
     @computed_field
-    def places_ssim(self) -> set[str]:
-        return {place.pref_name for place in self.ms_obj.deep_get(cls=st.Place)}
+    def places_ssim(self) -> list[str]:
+        return sorted({place.pref_name for place in self.ms_obj.deep_get(cls=st.Place)})
 
     @computed_field
-    def date_types_ssim(self) -> set[str]:
-        return {
-            date.type.label
-            for date in self.ms_obj.deep_get(cls=st.AssocDateItem)
-            if date.type.id != 'origin'
-        }
+    def date_types_ssim(self) -> list[str]:
+        return sorted(
+            {
+                date.type.label
+                for date in self.ms_obj.deep_get(cls=st.AssocDateItem)
+                if date.type.id != 'origin'
+            }
+        )
 
     @computed_field
-    def program_ssim(self) -> set[str]:
-        return {
-            program.label
-            for program in (
-                self.ms_obj.desc_provenance.program if self.ms_obj.desc_provenance else []
-            )
-        } | {
-            program.label
-            for program in (
-                self.ms_obj.image_provenance.program if self.ms_obj.image_provenance else []
-            )
-            if program.label
-        }
+    def program_ssim(self) -> list[str]:
+        return sorted(
+            {
+                program.label
+                for program in (
+                    self.ms_obj.desc_provenance.program if self.ms_obj.desc_provenance else []
+                )
+            }
+            | {
+                program.label
+                for program in (
+                    self.ms_obj.image_provenance.program if self.ms_obj.image_provenance else []
+                )
+                if program.label
+            }
+        )
 
     @computed_field
-    def reconstructed_from_ssim(self) -> set[str]:
-        return set(self.ms_obj.reconstructed_from)
+    def reconstructed_from_ssim(self) -> list[str]:
+        return sorted(set(self.ms_obj.reconstructed_from))
 
     @computed_field
-    def ot_script_ssim(self) -> set[str]:
-        return {
-            script_item.label
-            for ot_layer in self.ot_layers()
-            for writing_item in ot_layer.layer_record.writing
-            for script_item in writing_item.script
-        }
+    def ot_script_ssim(self) -> list[str]:
+        return sorted(
+            {
+                script_item.label
+                for ot_layer in self.ot_layers()
+                for writing_item in ot_layer.layer_record.writing
+                for script_item in writing_item.script
+            }
+        )
 
     @computed_field
-    def ot_writing_system_ssim(self) -> set[str]:
-        return {
-            script_item.writing_system
-            for ot_layer in self.ot_layers()
-            for writing_item in ot_layer.layer_record.writing
-            for script_item in writing_item.script
-        }
+    def ot_writing_system_ssim(self) -> list[str]:
+        return sorted(
+            {
+                script_item.writing_system
+                for ot_layer in self.ot_layers()
+                for writing_item in ot_layer.layer_record.writing
+                for script_item in writing_item.script
+            }
+        )
 
     @computed_field
-    def ot_genre_ssim(self) -> set[str]:
-        return {
-            genre.label
-            for layer in self.ot_layers()
-            for genre in layer.deep_get('genre', cls=st.ControlledTerm)
-        }
+    def ot_genre_ssim(self) -> list[str]:
+        return sorted(
+            {
+                genre.label
+                for layer in self.ot_layers()
+                for genre in layer.deep_get('genre', cls=st.ControlledTerm)
+            }
+        )
 
     @computed_field
-    def ot_date_isim(self) -> set[int]:
-        return {
-            year
-            for layer in self.ot_layers()
-            for date in layer.layer_record.assoc_date
-            if date.type.id == 'origin' and date.iso
-            for year in date.iso.years()
-        }
+    def ot_date_isim(self) -> list[int]:
+        return sorted(
+            {
+                year
+                for layer in self.ot_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin' and date.iso
+                for year in date.iso.years()
+            }
+        )
 
     @computed_field
-    def ot_language_ssim(self) -> set[str]:
-        return {
-            language.label
-            for layer in self.ot_layers()
-            for text_unit in layer.layer_record.text_unit
-            for language in text_unit.text_unit_record.lang
-        }
+    def ot_language_ssim(self) -> list[str]:
+        return sorted(
+            {
+                language.label
+                for layer in self.ot_layers()
+                for text_unit in layer.layer_record.text_unit
+                for language in text_unit.text_unit_record.lang
+            }
+        )
 
     @computed_field
-    def ot_works_ssim(self) -> set[str]:
-        return set(self.get_work_titles(layer_type='ot_layer', pref_only=True))
+    def ot_works_ssim(self) -> list[str]:
+        return sorted(set(self.get_work_titles(layer_type='ot_layer', pref_only=True)))
 
     #
     #   Facets (Guest/Para Only)
     #
 
     @computed_field
-    def para_script_ssim(self) -> set[str]:
-        return {
-            script.label
-            for layer in self.guest_layers()
-            for writing_item in layer.layer_record.writing
-            for script in writing_item.script
-        } | {
-            script.label
-            for para in self.get_para()
-            if para.type.id != 'framing'
-            for script in para.script
-        }
+    def para_script_ssim(self) -> list[str]:
+        return sorted(
+            {
+                script.label
+                for layer in self.guest_layers()
+                for writing_item in layer.layer_record.writing
+                for script in writing_item.script
+            }
+            | {
+                script.label
+                for para in self.get_para()
+                if para.type.id != 'framing'
+                for script in para.script
+            }
+        )
 
     @computed_field
-    def para_writing_system_ssim(self) -> set[str]:
-        return {
-            script.writing_system
-            for layer in self.guest_layers()
-            for writing_item in layer.layer_record.writing
-            for script in writing_item.script
-        } | {
-            script.writing_system
-            for para in self.get_para()
-            if para.type.id != 'framing'
-            for script in para.script
-        }
+    def para_writing_system_ssim(self) -> list[str]:
+        return sorted(
+            {
+                script.writing_system
+                for layer in self.guest_layers()
+                for writing_item in layer.layer_record.writing
+                for script in writing_item.script
+            }
+            | {
+                script.writing_system
+                for para in self.get_para()
+                if para.type.id != 'framing'
+                for script in para.script
+            }
+        )
 
     @computed_field
-    def para_date_isim(self) -> set[int]:
-        return {
-            year
-            for layer in self.guest_layers()
-            for date in layer.layer_record.assoc_date
-            if date.type.id == 'origin' and date.iso
-            for year in date.iso.years()
-        }
+    def para_date_isim(self) -> list[int]:
+        return sorted(
+            {
+                year
+                for layer in self.guest_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin' and date.iso
+                for year in date.iso.years()
+            }
+        )
 
     @computed_field
-    def para_language_ssim(self) -> set[str]:
-        return {
-            language.label
-            for layer in self.guest_layers()
-            for text_unit in layer.layer_record.text_unit
-            for language in text_unit.text_unit_record.lang
-        } | {
-            language.label
-            for para in self.get_para()
-            if para.type.id != 'framing'
-            for language in para.lang
-        }
+    def para_language_ssim(self) -> list[str]:
+        return sorted(
+            {
+                language.label
+                for layer in self.guest_layers()
+                for text_unit in layer.layer_record.text_unit
+                for language in text_unit.text_unit_record.lang
+            }
+            | {
+                language.label
+                for para in self.get_para()
+                if para.type.id != 'framing'
+                for language in para.lang
+            }
+        )
 
     @computed_field
-    def para_works_ssim(self) -> set[str]:
-        return set(self.get_work_titles(layer_type='guest_layer', pref_only=True))
+    def para_works_ssim(self) -> list[str]:
+        return sorted(set(self.get_work_titles(layer_type='guest_layer', pref_only=True)))
 
     @computed_field
-    def para_genre_ssim(self) -> set[str]:
-        return {
-            genre.label
-            for layer in self.guest_layers()
-            for genre in layer.deep_get('genre', cls=st.ControlledTerm)
-        }
+    def para_genre_ssim(self) -> list[str]:
+        return sorted(
+            {
+                genre.label
+                for layer in self.guest_layers()
+                for genre in layer.deep_get('genre', cls=st.ControlledTerm)
+            }
+        )
 
     @computed_field
-    def para_names_ssim(self) -> set[str]:
-        return {
-            agent_record.pref_name
-            for layer in self.guest_layers()
-            for agent_record in layer.deep_get(cls=st.Agent)
-        } | {
-            assoc_name.agent_record.pref_name
-            for para in self.get_para()
-            for assoc_name in para.assoc_name
-            if assoc_name.agent_record
-        }
+    def para_names_ssim(self) -> list[str]:
+        return sorted(
+            {
+                agent_record.pref_name
+                for layer in self.guest_layers()
+                for agent_record in layer.deep_get(cls=st.Agent)
+            }
+            | {
+                assoc_name.agent_record.pref_name
+                for para in self.get_para()
+                for assoc_name in para.assoc_name
+                if assoc_name.agent_record
+            }
+        )
 
     @computed_field
-    def para_type_ssim(self) -> set[str]:
-        return {subtype.label for para in self.get_para() for subtype in para.subtype}
+    def para_type_ssim(self) -> list[str]:
+        return sorted({subtype.label for para in self.get_para() for subtype in para.subtype})
 
     #
     #   UTO facets
     #
 
     @computed_field
-    def uto_script_ssim(self) -> set[str]:
-        return {script for layer in self.uto_layers() for script in layer.script}
+    def uto_script_ssim(self) -> list[str]:
+        return sorted({script for layer in self.uto_layers() for script in layer.script})
 
     @computed_field
-    def uto_language_ssim(self) -> set[str]:
-        return {language for layer in self.uto_layers() for language in layer.lang}
+    def uto_language_ssim(self) -> list[str]:
+        return sorted({language for layer in self.uto_layers() for language in layer.lang})
 
     @computed_field
-    def uto_date_isim(self) -> set[int]:
-        return {
-            year
-            for layer in self.uto_layers()
-            for date in layer.orig_date
-            if date.iso
-            for year in date.iso.years()
-        }
+    def uto_date_isim(self) -> list[int]:
+        return sorted(
+            {
+                year
+                for layer in self.uto_layers()
+                for date in layer.orig_date
+                if date.iso
+                for year in date.iso.years()
+            }
+        )
 
     #
     #   Scoped / keyword search
@@ -318,57 +355,62 @@ class ManuscriptSolrRecord(st.BaseModel):
         return self.ms_obj.shelfmark
 
     @computed_field
-    def titles_tesim(self) -> set[str]:
-        return set(self.get_work_titles(layer_type='ot_layer', pref_only=False))
+    def titles_tesim(self) -> list[str]:
+        return sorted(set(self.get_work_titles(layer_type='ot_layer', pref_only=False)))
 
     @computed_field
-    def names_tesim(self) -> set[str]:
-        return {
-            name
-            for assoc_name_item in self.ms_obj.deep_get(cls=st.AssocNameItemMerged)
-            for name in [
-                assoc_name_item.value,
-                assoc_name_item.as_written,
-            ]
-            if name
-        } | {
-            name
-            for agent in self.ms_obj.deep_get(cls=st.Agent)
-            for name in [
-                agent.pref_name,
-                *agent.alt_name,
-            ]
-        }
+    def names_tesim(self) -> list[str]:
+        return sorted(
+            {
+                name
+                for assoc_name_item in self.ms_obj.deep_get(cls=st.AssocNameItemMerged)
+                for name in [
+                    assoc_name_item.value,
+                    assoc_name_item.as_written,
+                ]
+                if name
+            }
+            | {
+                name
+                for agent in self.ms_obj.deep_get(cls=st.Agent)
+                for name in [
+                    agent.pref_name,
+                    *agent.alt_name,
+                ]
+            }
+        )
 
     @computed_field
-    def exerpts_tesim(self) -> set[str]:
-        return self.get_exerpts(exclude=['guest_layer', 'uto'])
+    def exerpts_tesim(self) -> list[str]:
+        return sorted(self.get_exerpts(exclude=['guest_layer', 'uto']))
 
     @computed_field
-    def places_tesim(self) -> set[str]:
-        return {
-            name
-            for assoc_place_item in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged)
-            for name in [
-                assoc_place_item.value,
-                assoc_place_item.as_written,
-                *(
-                    [
-                        assoc_place_item.place_record.pref_name,
-                        *assoc_place_item.place_record.alt_name,
-                    ]
-                    if assoc_place_item.place_record
-                    else []
-                ),
-            ]
-            if name
-        }
+    def places_tesim(self) -> list[str]:
+        return sorted(
+            {
+                name
+                for assoc_place_item in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged)
+                for name in [
+                    assoc_place_item.value,
+                    assoc_place_item.as_written,
+                    *(
+                        [
+                            assoc_place_item.place_record.pref_name,
+                            *assoc_place_item.place_record.alt_name,
+                        ]
+                        if assoc_place_item.place_record
+                        else []
+                    ),
+                ]
+                if name
+            }
+        )
 
     @computed_field
-    def contents_tesim(self) -> set[str]:
+    def contents_tesim(self) -> list[str]:
         exclude: list[LAYER_FIELDS] = ['guest_layer', 'uto']
 
-        return (
+        return sorted(
             self.ms_obj.deep_get(
                 'summary',
                 'pref_title',
@@ -402,10 +444,10 @@ class ManuscriptSolrRecord(st.BaseModel):
         )
 
     @computed_field
-    def paracontent_tesim(self) -> set[str]:
+    def paracontent_tesim(self) -> list[str]:
         exclude: list[LAYER_FIELDS] = ['ot_layer']
 
-        return (
+        return sorted(
             self.ms_obj.deep_get('summary', cls=str, exclude=exclude)
             | {
                 item
@@ -456,9 +498,9 @@ class ManuscriptSolrRecord(st.BaseModel):
         )
 
     @computed_field
-    def full_text_tesim(self) -> set[str]:
+    def full_text_tesim(self) -> list[str]:
         exclude: list[LAYER_FIELDS] = []
-        return (
+        return sorted(
             {
                 self.ms_obj.ark,
             }

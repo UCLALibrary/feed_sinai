@@ -101,11 +101,11 @@ def test_ot_genre_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_ot_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.ot_date_isim == {
+    assert result.ot_date_isim == [
         *range(601, 700),
         700,  # range is INCLUSIVE of 700
         1292,
-    }
+    ]
 
 
 def test_ot_language_ssim(result: ManuscriptSolrRecord) -> None:
@@ -129,7 +129,7 @@ def test_para_genre_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_para_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_date_isim == set()
+    assert result.para_date_isim == []
 
 
 def test_para_language_ssim(result: ManuscriptSolrRecord) -> None:
@@ -137,33 +137,33 @@ def test_para_language_ssim(result: ManuscriptSolrRecord) -> None:
 
 
 def test_para_works_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_works_ssim == set()
+    assert result.para_works_ssim == []
 
 
 def test_para_names_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_names_ssim == {
-        'Ephrem',
-        'Paul the Deacon',
-        'Maximus the Confessor',
+    assert result.para_names_ssim == [
         'Andrew of Crete',
-    }
+        'Ephrem',
+        'Maximus the Confessor',
+        'Paul the Deacon',
+    ]
 
 
 def test_para_type_ssim(result: ManuscriptSolrRecord) -> None:
     # TODO: this is currently empty bc we don't have subtype in the data yet
-    assert result.para_type_ssim == set()
+    assert result.para_type_ssim == []
 
 
 def test_uto_script_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.uto_script_ssim == set()
+    assert result.uto_script_ssim == []
 
 
 def test_uto_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.uto_date_isim == set()
+    assert result.uto_date_isim == []
 
 
 def test_uto_language_ssim(result: ManuscriptSolrRecord) -> None:
-    assert result.uto_language_ssim == set()
+    assert result.uto_language_ssim == []
 
 
 def test_shelfmark_ssi(result: ManuscriptSolrRecord) -> None:
