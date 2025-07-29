@@ -89,6 +89,51 @@ class ManuscriptSolrRecord(st.BaseModel):
         return self.ms_obj.iiif[0].manifest
 
     #
+    #   Sinaimanuscripts stuff
+    #
+
+    @computed_field
+    def header_index_tesim(self) -> list[str]:
+        result = [self.ms_obj.shelfmark]
+        if self.ms_obj.extent:
+            result.append(self.ms_obj.extent)
+
+        return result
+
+    @computed_field
+    def ot_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.ot_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
+
+    @computed_field
+    def para_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.guest_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
+
+    @computed_field
+    def uto_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.ot_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
+
+    #
     #   Facets (Main / any)
     #
 
@@ -199,7 +244,7 @@ class ManuscriptSolrRecord(st.BaseModel):
         )
 
     @computed_field
-    def ot_date_isim(self) -> list[int]:
+    def ot_years_isim(self) -> list[int]:
         return sorted(
             {
                 year
@@ -264,7 +309,7 @@ class ManuscriptSolrRecord(st.BaseModel):
         )
 
     @computed_field
-    def para_date_isim(self) -> list[int]:
+    def para_years_isim(self) -> list[int]:
         return sorted(
             {
                 year
@@ -339,7 +384,7 @@ class ManuscriptSolrRecord(st.BaseModel):
         return sorted({language for layer in self.uto_layers() for language in layer.lang})
 
     @computed_field
-    def uto_date_isim(self) -> list[int]:
+    def uto_years_isim(self) -> list[int]:
         return sorted(
             {
                 year

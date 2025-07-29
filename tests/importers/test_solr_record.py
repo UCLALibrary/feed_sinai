@@ -100,8 +100,8 @@ def test_ot_genre_ssim(result: ManuscriptSolrRecord) -> None:
     assert result.ot_genre_ssim
 
 
-def test_ot_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.ot_date_isim == [
+def test_ot_years_isim(result: ManuscriptSolrRecord) -> None:
+    assert result.ot_years_isim == [
         *range(601, 700),
         700,  # range is INCLUSIVE of 700
         1292,
@@ -128,8 +128,8 @@ def test_para_genre_ssim(result: ManuscriptSolrRecord) -> None:
     assert result.para_genre_ssim
 
 
-def test_para_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.para_date_isim == []
+def test_para_years_isim(result: ManuscriptSolrRecord) -> None:
+    assert result.para_years_isim == []
 
 
 def test_para_language_ssim(result: ManuscriptSolrRecord) -> None:
@@ -158,8 +158,8 @@ def test_uto_script_ssim(result: ManuscriptSolrRecord) -> None:
     assert result.uto_script_ssim == []
 
 
-def test_uto_date_isim(result: ManuscriptSolrRecord) -> None:
-    assert result.uto_date_isim == []
+def test_uto_years_isim(result: ManuscriptSolrRecord) -> None:
+    assert result.uto_years_isim == []
 
 
 def test_uto_language_ssim(result: ManuscriptSolrRecord) -> None:
