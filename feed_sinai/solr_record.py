@@ -405,7 +405,7 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def titles_tesim(self) -> list[str]:
-        return sorted(set(self.get_work_titles(layer_type='ot_layer', pref_only=False)))
+        return sorted(set(self.get_work_titles(layer_type=None, pref_only=False)))
 
     @computed_field
     def names_tesim(self) -> list[str]:
@@ -457,7 +457,8 @@ class ManuscriptSolrRecord(st.BaseModel):
 
     @computed_field
     def contents_tesim(self) -> list[str]:
-        exclude: list[LAYER_FIELDS] = ['guest_layer', 'uto']
+        exclude: list[LAYER_FIELDS] = []
+        layer_type: LAYER_FIELDS | None = None
 
         return sorted(
             self.ms_obj.deep_get(
@@ -469,7 +470,7 @@ class ManuscriptSolrRecord(st.BaseModel):
                 cls=str,
                 exclude=exclude,
             )
-            | self.get_titles(exclude=exclude)
+            | set(self.get_work_titles(layer_type=layer_type))
             | {
                 text_unit.label
                 for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
@@ -549,6 +550,7 @@ class ManuscriptSolrRecord(st.BaseModel):
     @computed_field
     def full_text_tesim(self) -> list[str]:
         exclude: list[LAYER_FIELDS] = []
+        layer_type: LAYER_FIELDS | None = None
         return sorted(
             {
                 self.ms_obj.ark,
@@ -582,7 +584,7 @@ class ManuscriptSolrRecord(st.BaseModel):
                 for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
                 for language in text_unit.lang
             }
-            | self.get_titles(exclude=exclude)
+            | set(self.get_work_titles(layer_type=layer_type, pref_only=False))
             | {
                 creator.agent_record.pref_name
                 for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
@@ -763,53 +765,19 @@ class ManuscriptSolrRecord(st.BaseModel):
                 if not pref_only:
                     yield work_wit.work.orig_lang_title
                     yield from work_wit.work.alt_title
+
             elif isinstance(work_wit.work, st.WorkBrief) and not pref_only:
                 yield work_wit.work.desc_title
 
-            for section in work_wit.contents:
-                yield section.pref_title
+            for contents_item in work_wit.contents:
+                yield contents_item.pref_title
                 if not pref_only:
-                    yield section.label
-                    yield section.pref_title
+                    yield contents_item.label
+                    yield contents_item.pref_title
 
             if not pref_only:
                 yield work_wit.alt_title
                 yield work_wit.as_written
-
-    def get_titles(self, exclude: list[LAYER_FIELDS] = []) -> set[str]:
-        return (
-            {
-                title
-                for layer in self.ms_obj.deep_get(cls=st.ManuscriptLayer, exclude=exclude)
-                for work in layer.deep_get(cls=st.ConceptualWorkMerged)
-                for title in [
-                    work.pref_title,
-                    work.orig_lang_title,
-                    *work.alt_title,
-                ]
-                if title
-            }
-            | {
-                work_brief.desc_title
-                for layer in self.ms_obj.deep_get(cls=st.ManuscriptLayer, exclude=exclude)
-                for work_brief in layer.deep_get(cls=st.WorkBriefMerged)
-                if work_brief.desc_title
-            }
-            | {
-                title
-                for layer in self.ms_obj.deep_get(cls=st.ManuscriptLayer, exclude=exclude)
-                for work_wit in layer.deep_get(cls=st.WorkWitItemUnmerged)
-                for title in [work_wit.alt_title, work_wit.as_written]
-                if title
-            }
-            | {
-                title
-                for layer in self.ms_obj.deep_get(cls=st.ManuscriptLayer, exclude=exclude)
-                for contents_item in layer.deep_get(cls=st.ContentsMerged)
-                for title in [contents_item.label, contents_item.pref_title]
-                if title
-            }
-        )
 
     def get_exerpts(self, exclude: list[LAYER_FIELDS] = []) -> set[str]:
         return (
