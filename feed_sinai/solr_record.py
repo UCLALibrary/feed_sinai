@@ -496,6 +496,11 @@ class ManuscriptSolrRecord(st.BaseModel):
     @computed_field
     def paracontent_tesim(self) -> list[str]:
         exclude: list[LAYER_FIELDS] = ['ot_layer']
+        exclude_inverse = [
+            layer_type
+            for layer_type in ['ot_layer', 'guest_layer', 'uto']
+            if layer_type not in exclude
+        ]
 
         return sorted(
             self.ms_obj.deep_get('summary', cls=str, exclude=exclude)
@@ -531,6 +536,31 @@ class ManuscriptSolrRecord(st.BaseModel):
             }
             | {
                 item
+                for para in self.ms_obj.deep_get(cls=st.ParaItemMerged, exclude=exclude_inverse)
+                for name in para.assoc_name
+                for item in [
+                    name.agent_record and name.agent_record.pref_name,
+                    name.value,
+                    name.as_written,
+                    *name.note,
+                ]
+                if item
+            }
+            | {
+                item
+                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
+                for item in [
+                    place.place_record and place.place_record.pref_name,
+                    place.value,
+                    place.as_written,
+                    *place.note,
+                ]
+                if item
+            }
+            | {
+                item
+                for para in self.ms_obj.deep_get(cls=st.ParaItemMerged, exclude=exclude_inverse)
+                for place in para.assoc_place
                 for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
                 for item in [
                     place.place_record and place.place_record.pref_name,
