@@ -3,15 +3,8 @@
 """Pydantic classes for the data model."""
 
 import logging
-from functools import cached_property
-from typing import (
-    Callable,
-    Iterator,
-    List,
-    Literal,
-    TypeVar,
-    cast,
-)
+from itertools import chain
+from typing import Callable, Iterator, List, Literal, TypeVar, Union, cast
 
 from pydantic import Field, computed_field
 from typing_extensions import ParamSpec
@@ -29,6 +22,17 @@ def filter_none(generator_function: Callable[P, Iterator[T | None]]) -> Callable
         for item in generator_function(*args, **kwds):
             if item is not None:
                 yield item
+
+    return wrapper
+
+
+Ta = TypeVar('Ta', bound=str | int)
+
+
+def generator_field(generator_function: Callable[P, Iterator[Ta]]) -> Callable[P, list[Ta]]:
+    @computed_field
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> list[Ta]:
+        return sorted(set(generator_function(*args, **kwargs)))
 
     return wrapper
 
@@ -403,336 +407,166 @@ class ManuscriptSolrRecord(st.BaseModel):
     def shelfmark_ssi(self) -> str:
         return self.ms_obj.shelfmark
 
-    @computed_field
-    def titles_tesim(self) -> list[str]:
-        return sorted(set(self.get_work_titles(layer_type=None, pref_only=False)))
+    @generator_field
+    @filter_none
+    def titles_tesim(self) -> Iterator[str | None]:
+        yield from self.ms_obj.deep_get('pref_title', 'desc_title', 'alt_title', cls=str)
 
-    @computed_field
-    def names_tesim(self) -> list[str]:
-        return sorted(
-            {
-                name
-                for assoc_name_item in self.ms_obj.deep_get(cls=st.AssocNameItemMerged)
-                for name in [
-                    assoc_name_item.value,
-                    assoc_name_item.as_written,
-                ]
-                if name
-            }
-            | {
-                name
-                for agent in self.ms_obj.deep_get(cls=st.Agent)
-                for name in [
-                    agent.pref_name,
-                    *agent.alt_name,
-                ]
-            }
+        for work_wit in self.get_work_wits():
+            yield work_wit.as_written
+            for contents_item in work_wit.contents:
+                yield contents_item.label
+
+    @generator_field
+    @filter_none
+    def names_tesim(self) -> Iterator[str | None]:
+        for agent in self.ms_obj.deep_get(cls=st.Agent):
+            yield agent.pref_name
+            yield from agent.alt_name
+
+        for assoc_name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged):
+            yield assoc_name.value
+            yield assoc_name.as_written
+            yield from assoc_name.note
+
+    @generator_field
+    @filter_none
+    def exerpts_tesim(self) -> Iterator[str | None]:
+        for exceprt in self.deep_get(cls=st.ExcerptItem):
+            yield exceprt.as_written
+            yield from exceprt.translation
+
+    @generator_field
+    @filter_none
+    def places_tesim(self) -> Iterator[str | None]:
+        # Note: assumes all Place records are found in the `place_record` field of an AssociatedPlace, which is the case as of commit 7f2a5 on 7/29/2025
+
+        for assoc_place_item in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged):
+            if assoc_place_item.place_record:
+                yield assoc_place_item.place_record.pref_name
+                yield from assoc_place_item.place_record.alt_name
+
+            yield assoc_place_item.value
+            yield assoc_place_item.as_written
+            yield from assoc_place_item.note
+
+    @generator_field
+    @filter_none
+    def contents_tesim(self) -> Iterator[str | None]:
+        yield from self.ms_obj.deep_get('summary', 'pref_title', 'desc_title', 'alt_title', cls=str)
+
+        for work_wit in self.get_work_wits():
+            yield work_wit.as_written
+            for contents_item in work_wit.contents:
+                yield contents_item.label
+                yield from contents_item.note
+
+        for layer in self.get_layers():
+            if isinstance(layer, st.ManuscriptLayerMerged):
+                for text_unit in layer.layer_record.text_unit:
+                    yield text_unit.label
+
+        for exerpt in self.ms_obj.deep_get(cls=st.ExcerptItem):
+            yield exerpt.as_written
+            yield from exerpt.translation
+            yield from exerpt.note
+
+    @generator_field
+    @filter_none
+    def paracontent_tesim(self) -> Iterator[str | None]:
+        for item in chain(
+            (
+                ms_layer.layer_record
+                for ms_layer in self.get_layers(layer_type='guest_layer')
+                if ms_layer.layer_record
+            ),
+            self.ms_obj.deep_get(cls=st.ParaItemMerged),
+        ):
+            if isinstance(item, st.InscribedLayerMerged):
+                yield item.summary
+
+            elif isinstance(item, st.ParaItemMerged):
+                for script in item.script:
+                    yield script.label
+                    yield script.writing_system
+
+            yield from item.deep_get('pref_name', cls=str)
+
+            for assoc_name in item.deep_get(cls=st.AssocNameItemMerged):
+                yield assoc_name.value
+                yield assoc_name.as_written
+                yield from assoc_name.note
+
+            for assoc_place in item.deep_get(cls=st.AssocPlaceItemMerged):
+                yield assoc_place.value
+                yield assoc_place.as_written
+                yield from assoc_place.note
+
+            for assoc_date in item.deep_get(cls=st.AssocDateItem):
+                yield from assoc_date.note
+
+    @generator_field
+    @filter_none
+    def full_text_tesim(self) -> Iterator[str | None]:
+        yield self.ms_obj.ark
+
+        for support in self.ms_obj.deep_get('support', cls=st.ControlledTerm):
+            yield support.label
+
+        for script in self.ms_obj.deep_get(cls=st.ScriptItem):
+            yield script.label
+            yield script.writing_system
+
+        yield self.ms_obj.shelfmark
+
+        for note in self.ms_obj.deep_get(cls=st.NoteItem):
+            yield note.value
+        yield from self.ms_obj.deep_get('note', cls=str)
+
+        yield from self.ms_obj.deep_get('color', cls=str)
+
+        for lang in self.ms_obj.deep_get('lang', cls=st.ControlledTerm):
+            yield lang.label
+
+        yield from self.ms_obj.deep_get(
+            'pref_title',
+            cls=str,
         )
 
-    @computed_field
-    def exerpts_tesim(self) -> list[str]:
-        return sorted(self.get_exerpts(exclude=['guest_layer', 'uto']))
+        for text_unit in self.ms_obj.deep_get(cls=st.TextUnit):
+            yield text_unit.label
 
-    @computed_field
-    def places_tesim(self) -> list[str]:
-        return sorted(
-            {
-                name
-                for assoc_place_item in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged)
-                for name in [
-                    assoc_place_item.value,
-                    assoc_place_item.as_written,
-                    *(
-                        [
-                            assoc_place_item.place_record.pref_name,
-                            *assoc_place_item.place_record.alt_name,
-                        ]
-                        if assoc_place_item.place_record
-                        else []
-                    ),
-                ]
-                if name
-            }
+        yield from self.ms_obj.deep_get(
+            'desc_title',
+            'alt_title',
+            'as_written',
+            'translation',
+            cls=str,
         )
 
-    @computed_field
-    def contents_tesim(self) -> list[str]:
-        exclude: list[LAYER_FIELDS] = []
-        layer_type: LAYER_FIELDS | None = None
+        for contents_item in self.ms_obj.deep_get(cls=st.Contents):
+            yield contents_item.label
 
-        return sorted(
-            self.ms_obj.deep_get(
-                'summary',
-                'pref_title',
-                'alt_title',
-                'desc_title',
-                'orig_lang_title',
-                cls=str,
-                exclude=exclude,
-            )
-            | set(self.get_work_titles(layer_type=layer_type))
-            | {
-                text_unit.label
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-            }
-            | self.get_exerpts(exclude=exclude)
-            | {
-                note
-                for contents_item in self.ms_obj.deep_get(cls=st.Contents, exclude=exclude)
-                for note in contents_item.note
-            }
-            | {
-                note
-                for excerpt in self.ms_obj.deep_get(cls=st.ExcerptItem, exclude=exclude)
-                for note in excerpt.note
-            }
-            | {
-                note
-                for work_wit in self.ms_obj.deep_get(cls=st.WorkWitItemMerged, exclude=exclude)
-                for note in work_wit.note
-            }
+        for para in self.ms_obj.deep_get(cls=st.ParaItem):
+            yield para.label
+
+        yield from self.ms_obj.deep_get(
+            'pref_name',
+            'alt_name',
+            cls=str,
         )
 
-    @computed_field
-    def paracontent_tesim(self) -> list[str]:
-        exclude: list[LAYER_FIELDS] = ['ot_layer']
-        exclude_inverse = [
-            layer_type
-            for layer_type in ['ot_layer', 'guest_layer', 'uto']
-            if layer_type not in exclude
-        ]
+        for name in self.ms_obj.deep_get(cls=st.AssocNameItem):
+            yield name.value
 
-        return sorted(
-            self.ms_obj.deep_get('summary', cls=str, exclude=exclude)
-            | {
-                item
-                # don't use 'exclude', bc this one is only ParaItems
-                for para in self.ms_obj.deep_get(cls=st.ParaItemMerged)
-                for item in [
-                    para.type.label,
-                    *[
-                        item
-                        for script in para.script
-                        for item in [script.label, script.writing_system]
-                    ],
-                    *[lang.label for lang in para.lang],
-                    para.label,
-                    para.as_written,
-                    *para.translation,
-                    *para.note,
-                ]
-                if item
-            }
-            | {
-                item
-                for name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-                for item in [
-                    name.agent_record and name.agent_record.pref_name,
-                    name.value,
-                    name.as_written,
-                    *name.note,
-                ]
-                if item
-            }
-            | {
-                item
-                for para in self.ms_obj.deep_get(cls=st.ParaItemMerged, exclude=exclude_inverse)
-                for name in para.assoc_name
-                for item in [
-                    name.agent_record and name.agent_record.pref_name,
-                    name.value,
-                    name.as_written,
-                    *name.note,
-                ]
-                if item
-            }
-            | {
-                item
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                for item in [
-                    place.place_record and place.place_record.pref_name,
-                    place.value,
-                    place.as_written,
-                    *place.note,
-                ]
-                if item
-            }
-            | {
-                item
-                for para in self.ms_obj.deep_get(cls=st.ParaItemMerged, exclude=exclude_inverse)
-                for place in para.assoc_place
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                for item in [
-                    place.place_record and place.place_record.pref_name,
-                    place.value,
-                    place.as_written,
-                    *place.note,
-                ]
-                if item
-            }
-            | {
-                note
-                for date in self.ms_obj.deep_get(cls=st.AssocDateItem, exclude=exclude)
-                for note in date.note
-            }
-        )
+        for place in self.ms_obj.deep_get(cls=st.AssocPlaceItem):
+            yield place.value
 
-    @computed_field
-    def full_text_tesim(self) -> list[str]:
-        exclude: list[LAYER_FIELDS] = []
-        layer_type: LAYER_FIELDS | None = None
-        return sorted(
-            {
-                self.ms_obj.ark,
-            }
-            | {
-                term.label
-                for term in self.ms_obj.deep_get('support', cls=st.ControlledTerm, exclude=exclude)
-            }
-            | {
-                item
-                for writing in self.ms_obj.deep_get(cls=st.WritingItem, exclude=exclude)
-                for script in writing.script
-                for item in [script.label, script.writing_system]
-            }
-            | {
-                self.ms_obj.shelfmark,
-            }
-            | self.ms_obj.deep_get('summary', 'note', cls=str, exclude=exclude)
-            | {
-                note_item.value
-                for note_item in self.ms_obj.deep_get(cls=st.NoteItem, exclude=exclude)
-                if note_item.value
-            }
-            | {
-                color
-                for ink in self.ms_obj.deep_get(cls=st.InkItem, exclude=exclude)
-                for color in ink.color
-            }
-            | {
-                language.label
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for language in text_unit.lang
-            }
-            | set(self.get_work_titles(layer_type=layer_type, pref_only=False))
-            | {
-                creator.agent_record.pref_name
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for work_wit in text_unit.work_wit
-                for creator in work_wit.work.creator
-                if creator.agent_record and creator.agent_record.pref_name
-            }
-            | {
-                name
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for work_wit in text_unit.work_wit
-                for creator in work_wit.work.creator
-                if creator.agent_record
-                for name in creator.agent_record.alt_name
-            }
-            | {
-                text_unit.label
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-            }
-            | self.get_exerpts(exclude=exclude)
-            | {
-                note
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for work_wit in text_unit.work_wit
-                for contents_item in work_wit.contents
-                for note in contents_item.note
-            }
-            | {
-                note
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for work_wit in text_unit.work_wit
-                for excerpt in work_wit.excerpt
-                for note in excerpt.note
-            }
-            | {
-                note
-                for text_unit in self.ms_obj.deep_get(cls=st.TextUnitMerged, exclude=exclude)
-                for work_wit in text_unit.work_wit
-                for note in work_wit.note
-            }
-            | {
-                item
-                for part in self.ms_obj.part
-                for para in part.para
-                for script in para.script
-                for item in [script.label, script.writing_system]
-            }
-            | {
-                language.label
-                for part in self.ms_obj.part
-                for para in part.para
-                for language in para.lang
-            }
-            | {para.label for part in self.ms_obj.part for para in part.para if para.label}
-            | {
-                para.as_written
-                for part in self.ms_obj.part
-                for para in part.para
-                if para.as_written
-            }
-            | {
-                translation
-                for part in self.ms_obj.part
-                for para in part.para
-                for translation in para.translation
-            }
-            | {note for part in self.ms_obj.part for para in part.para for note in para.note}
-            | {
-                assoc_name.agent_record.pref_name
-                for assoc_name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-                if assoc_name.agent_record
-            }
-            | {
-                place.place_record.pref_name
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                if place.place_record
-            }
-            | {
-                note
-                for date in self.ms_obj.deep_get(cls=st.AssocDateItem, exclude=exclude)
-                for note in date.note
-            }
-            | {
-                name.value
-                for name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-                if name.value
-            }
-            | {
-                name.as_written
-                for name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-                if name.as_written
-            }
-            | {
-                note
-                for name in self.ms_obj.deep_get(cls=st.AssocNameItemMerged, exclude=exclude)
-                for note in name.note
-            }
-            | {
-                place.value
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                if place.value
-            }
-            | {
-                place.as_written
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                if place.as_written
-            }
-            | {
-                note
-                for place in self.ms_obj.deep_get(cls=st.AssocPlaceItemMerged, exclude=exclude)
-                for note in place.note
-            }
-            | {ms.type.label for ms in self.ms_obj.related_mss}
-            | {ms.label for ms in self.ms_obj.related_mss}
-            | {note for ms in self.ms_obj.related_mss for note in ms.note}
-            | {mss.label for ms in self.ms_obj.related_mss for mss in ms.mss}
-            | {para.type.label for part in self.ms_obj.part for para in part.para}
-        )
+        for related_ms in self.ms_obj.deep_get(cls=st.RelatedMs):
+            yield related_ms.type.label
+            yield related_ms.label
+            for ms in related_ms.mss:
+                yield ms.label
 
     @computed_field
     def manuscript_json_ss(self) -> str:
@@ -776,6 +610,12 @@ class ManuscriptSolrRecord(st.BaseModel):
             yield from self.ms_obj.uto
             for part in self.ms_obj.part:
                 yield from part.uto
+
+    def get_text_units(self) -> Iterator[st.TextUnitMerged]:
+        for layer in self.get_layers():
+            if layer.layer_record:
+                for text_unit in layer.layer_record.text_unit:
+                    yield text_unit.text_unit_record
 
     def get_work_wits(
         self, layer_type: LAYER_FIELDS | None = None

@@ -9,6 +9,7 @@ from typing import (
     Any,
     Callable,
     Collection,
+    Iterator,
     Literal,
     Optional,
     Self,
@@ -33,7 +34,7 @@ from pydantic.main import IncEx
 
 SiblingModel = TypeVar('SiblingModel', bound=PydanticBaseModel)
 FieldValue = Union[str, int, 'BaseModel']
-T = TypeVar('T', bound=FieldValue)
+T = TypeVar('T')
 
 
 class BaseModel(PydanticBaseModel):
