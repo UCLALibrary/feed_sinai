@@ -44,98 +44,9 @@ class ManuscriptSolrRecord(st.BaseModel):
     def __repr__(self) -> str:
         return f'<ManuscriptSolrRecord ark="{self.ark_ssi}">'
 
-    #
-    #   Blacklight Stuff
-    #
-
-    @computed_field
-    def id(self) -> str:
-        return self.ms_obj.ark
-
     @computed_field
     def ark_ssi(self) -> str:
         return self.ms_obj.ark
-
-    @computed_field
-    def has_model_ssim(self) -> List[str]:
-        return ['Work']
-
-    @computed_field
-    def visibility_ssi(self) -> str:
-        return 'open'
-
-    @computed_field
-    def discover_access_group_ssim(self) -> List[str]:
-        return ['public']
-
-    @computed_field
-    def read_access_group_ssim(self) -> List[str]:
-        return ['public']
-
-    @computed_field
-    def download_access_person_ssim(self) -> List[str]:
-        return ['public']
-
-    @computed_field
-    def thumbnail_url_ss(self) -> st.AnyUrl | None:
-        for iiif in self.ms_obj.iiif:
-            if iiif.thumbnail:
-                return iiif.thumbnail
-
-        logging.warning(f'no thumbnail for {self.ms_obj.ark}')
-        return None
-
-    @computed_field
-    def iiif_manifest_url_ssi(self) -> st.AnyUrl | None:
-        if len(self.ms_obj.iiif) == 0:
-            return None
-
-        return self.ms_obj.iiif[0].manifest
-
-    #
-    #   Sinaimanuscripts stuff
-    #
-
-    @computed_field
-    def header_index_tesim(self) -> list[str]:
-        result = [self.ms_obj.shelfmark]
-        if self.ms_obj.extent:
-            result.append(self.ms_obj.extent)
-
-        return result
-
-    @computed_field
-    def ot_date_tesim(self) -> list[str]:
-        return sorted(
-            {
-                date.value
-                for layer in self.ot_layers()
-                for date in layer.layer_record.assoc_date
-                if date.type.id == 'origin'
-            }
-        )
-
-    @computed_field
-    def para_date_tesim(self) -> list[str]:
-        return sorted(
-            {
-                date.value
-                for layer in self.guest_layers()
-                for date in layer.layer_record.assoc_date
-                if date.type.id == 'origin'
-            }
-        )
-
-    @computed_field
-    def uto_date_tesim(self) -> list[str]:
-        return sorted(
-            {
-                date.value
-                for layer in self.ot_layers()
-                for date in layer.layer_record.assoc_date
-                if date.type.id == 'origin'
-            }
-        )
 
     #
     #   Facets (Main / any)
@@ -571,6 +482,95 @@ class ManuscriptSolrRecord(st.BaseModel):
     @computed_field
     def manuscript_json_ss(self) -> str:
         return self.ms_obj.model_dump_json()
+
+    #
+    #   Blacklight Stuff
+    #
+
+    @computed_field
+    def id(self) -> str:
+        return self.ms_obj.ark
+
+    @computed_field
+    def has_model_ssim(self) -> List[str]:
+        return ['Work']
+
+    @computed_field
+    def visibility_ssi(self) -> str:
+        return 'open'
+
+    @computed_field
+    def discover_access_group_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
+    def read_access_group_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
+    def download_access_person_ssim(self) -> List[str]:
+        return ['public']
+
+    @computed_field
+    def thumbnail_url_ss(self) -> st.AnyUrl | None:
+        for iiif in self.ms_obj.iiif:
+            if iiif.thumbnail:
+                return iiif.thumbnail
+
+        logging.warning(f'no thumbnail for {self.ms_obj.ark}')
+        return None
+
+    @computed_field
+    def iiif_manifest_url_ssi(self) -> st.AnyUrl | None:
+        if len(self.ms_obj.iiif) == 0:
+            return None
+
+        return self.ms_obj.iiif[0].manifest
+
+    #
+    #   Sinaimanuscripts stuff
+    #
+
+    @computed_field
+    def header_index_tesim(self) -> list[str]:
+        result = [self.ms_obj.shelfmark]
+        if self.ms_obj.extent:
+            result.append(self.ms_obj.extent)
+
+        return result
+
+    @computed_field
+    def ot_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.ot_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
+
+    @computed_field
+    def para_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.guest_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
+
+    @computed_field
+    def uto_date_tesim(self) -> list[str]:
+        return sorted(
+            {
+                date.value
+                for layer in self.ot_layers()
+                for date in layer.layer_record.assoc_date
+                if date.type.id == 'origin'
+            }
+        )
 
     #
     #   Helper methods
