@@ -40,16 +40,16 @@ class TestBaseModel:
             assert 'sometime' in obj.deep_get(cls=str)
 
         def test_gets_by_type_from_children(self, obj: st.Date) -> None:
-            assert {'1980', '2025'} <= obj.deep_get('not_before', 'not_after', cls=str)
+            assert {'1980', '2025'} <= set(obj.deep_get('not_before', 'not_after', cls=str))
 
         def test_gets_by_name(self, obj: st.Date) -> None:
-            assert obj.deep_get('not_after', cls=str) == {'2025'}
+            assert set(obj.deep_get('not_after', cls=str)) == {'2025'}
 
         def test_ignores_by_name(self, obj: st.Date) -> None:
             assert '1980' not in obj.deep_get(cls=str, exclude=['not_before'])
 
         def test_gets_submodels(self, obj: st.Date) -> None:
-            assert obj.deep_get(cls=st.Iso) == {obj.iso}
+            assert set(obj.deep_get(cls=st.Iso)) == {obj.iso}
 
         def test_gets_assoc_name_item(self) -> None:
             name = TestAssocNameItem.EPHREM.convert(st.AssocNameItemUnmerged)
@@ -59,7 +59,7 @@ class TestBaseModel:
                 lang=[st.ControlledTerm(id='l', label='L')],
                 assoc_name=[name],
             )
-            assert para.deep_get(cls=st.AssocNameItemUnmerged) == {name}
+            assert set(para.deep_get(cls=st.AssocNameItemUnmerged)) == {name}
 
         def test_fib(self) -> None:
             test_obj = ExampleModel.model_validate(
@@ -74,7 +74,7 @@ class TestBaseModel:
                 }
             )
 
-            assert test_obj.deep_get('a', 'b', cls=int) == {1, 2, 3, 5, 8, 13, 21, 34, 55}
+            assert set(test_obj.deep_get('a', 'b', cls=int)) == {1, 2, 3, 5, 8, 13, 21, 34, 55}
 
 
 class TestControlledTerm:

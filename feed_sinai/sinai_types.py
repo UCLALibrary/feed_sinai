@@ -107,9 +107,9 @@ class BaseModel(PydanticBaseModel):
         data = self.model_dump() | updated_data
         return cls(**data)
 
-    def deep_get(self, *names: str, cls: type[T], exclude: Collection[str] = tuple()) -> set[T]:
-        result: set[T] = set()  # if issubclass(cls, Hashable) else []
-
+    def deep_get(
+        self, *names: str, cls: type[T], exclude: Collection[str] = tuple()
+    ) -> Iterator[T]:
         for field_name in self.model_fields_set:
             if field_name in exclude:
                 continue
@@ -121,13 +121,10 @@ class BaseModel(PydanticBaseModel):
 
             for obj in field_value_tuple:
                 if isinstance(obj, cls) and (len(names) == 0 or field_name in names):
-                    result.add(obj)
+                    yield obj
 
-                if hasattr(obj, 'deep_get') and field_name not in exclude:
-                    new = obj.deep_get(*names, cls=cls, exclude=exclude)
-                    result.update(new)
-
-        return result
+                if isinstance(obj, BaseModel) and field_name not in exclude:
+                    yield from obj.deep_get(*names, cls=cls, exclude=exclude)
 
 
 NonEmptyStr = Annotated[
