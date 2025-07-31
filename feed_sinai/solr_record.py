@@ -375,7 +375,7 @@ class ManuscriptSolrRecord(st.BaseModel):
         for layer in self.get_layers():
             if isinstance(layer, st.ManuscriptLayerMerged):
                 for text_unit in layer.layer_record.text_unit:
-                    yield text_unit.label
+                    yield text_unit.text_unit_record.label
 
         for exerpt in self.ms_obj.deep_get(cls=st.ExcerptItem):
             yield exerpt.as_written
