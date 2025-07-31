@@ -457,6 +457,7 @@ class ManuscriptSolrRecord(st.BaseModel):
             'alt_title',
             'as_written',
             'translation',
+            'summary',
             cls=str,
         )
 
@@ -483,6 +484,10 @@ class ManuscriptSolrRecord(st.BaseModel):
             yield related_ms.label
             for ms in related_ms.mss:
                 yield ms.label
+
+        if self.ms_obj.image_provenance:
+            for program in self.ms_obj.image_provenance.program:
+                yield program.delivery
 
     @computed_field
     def manuscript_json_ss(self) -> str:
