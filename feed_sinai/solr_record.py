@@ -368,6 +368,7 @@ class ManuscriptSolrRecord(st.BaseModel):
 
         for work_wit in self.get_work_wits():
             yield work_wit.as_written
+            yield from work_wit.note
             for contents_item in work_wit.contents:
                 yield contents_item.label
                 yield from contents_item.note
