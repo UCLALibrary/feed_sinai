@@ -279,10 +279,17 @@ class SinaiJsonImporter:
         await asyncio.gather(*results)
 
     async def add_batch(self, batch: list[dict]) -> None:
-        async with self.connection_pool:
-            response = await self.async_client.post(
-                f'{self.solr_url}/update?commit=true', json=batch
-            )
+        try:
+            async with self.connection_pool:
+                response = await self.async_client.post(
+                    f'{self.solr_url}/update?commit=true', json=batch
+                )
+        except Exception as e:
+            if len(batch) == 1:
+                print(f'Error adding record {batch[0]["id"]}: {e}')
+            else:
+                mid = int(len(batch) / 2)
+                await asyncio.gather(self.add_batch(batch[:mid]), self.add_batch(batch[mid:]))
 
         if response.is_error:
             if len(batch) == 1:
