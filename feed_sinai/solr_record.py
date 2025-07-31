@@ -395,9 +395,13 @@ class ManuscriptSolrRecord(st.BaseModel):
             self.ms_obj.deep_get(cls=st.ParaItemMerged),
         ):
             if isinstance(item, st.InscribedLayerMerged):
-                yield item.summary
+                yield from item.deep_get('summary', cls=str)
 
             elif isinstance(item, st.ParaItemMerged):
+                yield item.label
+                yield item.as_written
+                yield from item.translation
+                yield from item.note
                 for script in item.script:
                     yield script.label
                     yield script.writing_system
