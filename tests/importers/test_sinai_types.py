@@ -4,7 +4,7 @@ from typing import Hashable, List, Optional
 from unittest.mock import Mock
 
 import pytest
-from pydantic import ValidationError
+from pydantic import AnyUrl, ValidationError
 
 import feed_sinai.sinai_types as st
 from feed_sinai.sinai_json_importer import SinaiJsonImporter
@@ -919,12 +919,33 @@ class TestIiifItem:
                     "id": "main", 
                     "label": "Main" 
                 }, 
+                "manifest": "https://iiif.library.ucla.edu/ark%3A%2F21198%2Fz15f0f9b/manifest", 
+                "text_direction": "right-to-left", 
+                "behavior": "paged", 
+                "thumbnail": "https://iiif.sinaimanuscripts.library.ucla.edu/iiif/2/ark%3A%2F21198%2Fz15f0f9b%2Fp161m45m/full/!200,200/0/default.jpg" 
+            }
+        """
+        )
+
+    def test_ingest_in_url(self) -> None:
+        """Example from https://github.com/UCLALibrary/sinaiportal_data/blob/626274aac4d5f9004db44615827ebc167da00036/export_test/ms_objs/te5f0f9b.json"""
+
+        result = st.IiifItem.model_validate_json(
+            """
+            { 
+                "type": { 
+                    "id": "main", 
+                    "label": "Main" 
+                }, 
                 "manifest": "https://ingest.iiif.library.ucla.edu/ark%3A%2F21198%2Fz15f0f9b/manifest", 
                 "text_direction": "right-to-left", 
                 "behavior": "paged", 
                 "thumbnail": "https://iiif.sinaimanuscripts.library.ucla.edu/iiif/2/ark%3A%2F21198%2Fz15f0f9b%2Fp161m45m/full/!200,200/0/default.jpg" 
             }
         """
+        )
+        assert result.manifest == AnyUrl(
+            'https://iiif.library.ucla.edu/ark%3A%2F21198%2Fz15f0f9b/manifest'
         )
 
 

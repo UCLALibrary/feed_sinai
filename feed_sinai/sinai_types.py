@@ -761,6 +761,11 @@ class IiifItem(BaseModel):
     behavior: Optional[Behavior] = None
     thumbnail: Optional[AnyUrl] = None
 
+    @field_validator('manifest', mode='before')
+    @classmethod
+    def remove_ingest_from_url(cls, value: AnyUrl) -> AnyUrl:
+        return AnyUrl(str(value).replace('ingest.iiif.library.ucla.edu', 'iiif.library.ucla.edu'))
+
 
 # TODO only used in unattested class DigProvenance
 class Image(BaseModel):
