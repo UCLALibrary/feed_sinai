@@ -5,6 +5,8 @@ import csv
 
 import pytest  # type: ignore
 from pysolr import Solr  # type: ignore
+from typing import Literal
+
 import feed_sinai
 import test.fixtures as fixtures  # pylint: disable=wrong-import-order
 
@@ -214,6 +216,38 @@ class TestMapRecord:
             config=self.CONFIG,
         )
         assert result[facet_field_name] == [value]
+
+    
+    @pytest.mark.parametrize(
+        ["row", "expected"],
+        [
+            ({"Shelfmark": "abc 123"}, "abc 123"),
+            ({"Shelfmark": "abc 123|~|456"}, "abc 123"), 
+            ({"Shelfmark": None}, None),
+            ({}, False),
+        ],
+    )
+    def test_sets_sort_field(
+        self, row: dict[str, str | list[str]], expected: str | Literal[False]
+    ) -> None:
+        """Sets the field `shelfmark_tsort`; by extension, a test of the logic for all sort fields."""
+        result = feed_sinai.map_record(
+            {
+                "Item ARK": "ark:/123/abc",
+                "IIIF Manifest URL": "https://iiif.library.ucla.edu/ark%3A%2F123%2Fabc/manifest",
+                **row,
+            },
+            self.solr_client,
+            config=self.CONFIG,
+        )
+
+        if expected:
+            assert "shelfmark_tsort" in result
+            assert result["shelfmark_tsort"] == expected
+        else:
+            assert "shelfmark_tsort" not in result
+
+
 
 
 class TestThumbnailFromChild:

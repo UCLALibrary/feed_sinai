@@ -1,6 +1,11 @@
 # feed_sinai
 Script to process CSVs into a Sinai-ready solr index.
 
+> [!IMPORTANT]
+> This repo contains the current code for loading data into the [Sinai Manuscripts Digital Library](https://sinaimanuscripts.library.ucla.edu/). A newer version, developed to support the new [Sinai Maniuscripts Data Portal](https://sinaiportal.library.ucla.edu) data model, exists [in the feed_ursus repository](https://github.com/UCLALibrary/feed_ursus/tree/main/feed_sinai). Once the frontend supports that data model, working code will be consolidated there.
+>
+> As of August 2026, the frontend does not yet support the new data model, so this repository contains the script that should be used to load production data.
+
 # Using feed_sinai.py
 
 We recommend installing with [poetry](https://python-poetry.org) and [pyenv](https://github.com/pyenv/pyenv).  which can be installed with [homebrew](https://brew.sh):
