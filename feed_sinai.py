@@ -243,16 +243,19 @@ def map_record(row: DLCSRecord, solr_client: Solr, config: typing.Dict) -> Sinai
     record["name_fields_index_tesim"] = name_fields_index(record)
 
     # SORT FIELDS
-    titles = record.get("title_tesim")
-    if isinstance(titles, typing.Sequence) and len(titles) >= 1:
-        record["sort_title_ssort"] = titles[0]
 
-    # used a solr copyfield for shelfmark sorting
-    # shelfmarks = record.get("shelfmark_ssi")
-    # print(shelfmarks)
-    # if isinstance(shelfmarks, typing.Sequence) and len(shelfmarks) >= 1:
-        # print(shelfmarks[0])
-        # record["shelfmark_aplha_numeric_ssort"] = shelfmarks[0]
+    for source_field, new_field in [
+        ("title_tesim", "sort_title_ssort"),
+        ("title_tesim", "sort_title_tsort"),
+        ("shelfmark_ssi", "shelfmark_tsort"),
+    ]:
+        match record.get(source_field):
+            case str(value):
+                record[new_field] = value
+            case [str(value), *_]:
+                record[new_field] = value
+            case _:
+                pass
 
 # -----------------------------------------------------------------------
     years = record.get("year_isim")
